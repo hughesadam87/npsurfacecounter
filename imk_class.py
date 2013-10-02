@@ -7,9 +7,14 @@
 #-------------------------------------------------------------------------------
 
 import shutil, sys, subprocess, os, itertools
+import os.path as op
 from math import pi, sqrt
 from copy import deepcopy
 from operator import itemgetter
+
+import logging
+logger = logging.getLogger(__name__)
+from logger import logclass
 
 ### 3rd party modules imports ###
 import numpy as np
@@ -39,40 +44,44 @@ from config import hcount #To avoid namespace conflicts
 #r2=lambda x: str(round(x,2))
 
 def r2(x):
-    if x == None:  #Actually is necessary to use == here
+    if x is None:  
         return 'None'
-    else:
-        return str(round(x,2))
+    return str(round(x,2))
     
 def roundint(x):
     ''' Round to whole float and then take int'''
     return int(round(x,0))
 
+@logclass(log_name=__name__ , public_lvl='info',
+          #skip=['_ts_from_picklefiles', 'from_namespace'])
+          )
 class ImageDestroyer(object):
     ''' Class used to do various imagej analysis things in python'''
 
     ### Class attributes have the same value no matter what image is being analyzed. ###
-    units='nm'  
-    rcore=31250.0   #Optical fiber diameter is 62.5 so radius is 31.25um
-
+    UNITS = 'nm'  
+    RCORE = 31250.0   #Optical fiber diameter is 62.5 so radius is 31.25um
 
     @property
     def total_sensing_area(self):
         '''Defines the area of the sampled surface'''
-        return pi * self.rcore**2  #units**2
+        return pi * self.RCORE**2  #units**2
 
     @total_sensing_area.setter
     def total_sensing_area(self):
-        self.rcore=sqrt(self.total_sensing_area / pi)
+        self.RCORE=sqrt(self.total_sensing_area / pi)
 
 
     @property
     def mag_scale(self):
         ''' This is a scaling between magnification and pixel units.  Inherently based on 1024*768 resolution image.
         If a higher/lower res image is passed in, this will be adjusted in the _set_image_parameters() method.'''
-        if self.units=='um':
+        if self.UNITS == 'um':
+            logger.critical('UNITS set to "um", but these have not been thoroughly tested.'
+                            ' "nm" are strongly recommended".')
             return 0.00277 #um/pixel
-        elif self.units=='nm':
+
+        elif self.UNITS == 'nm':
             return 2.777   #nm/pixel based on 100k mag and 1024*768 image. Annie showed equivalence/linearity at all scales    
 
     ### These are the variables that change with each image.  Called "Instance variables" ###   
@@ -554,11 +563,11 @@ class ImageDestroyer(object):
         return (
             ('Filename', self.shortname),
             ('magnification', self.mag),
-            ('field of view(%s)'%self.units, \
+            ('field of view(%s)'%self.UNITS, \
              (round(self.resolution[0]*self.min_pixel_length , 0) ,\
               round(self.resolution[1]*self.min_pixel_length , 0) ) ),
             ('resolution', self.resolution),  
-            ('%s/pixel'%self.units, r2(self.min_pixel_length)))
+            ('%s/pixel'%self.UNITS, r2(self.min_pixel_length)))
 
 
     @property
@@ -607,12 +616,12 @@ class ImageDestroyer(object):
     def np_size_parms(self):
         if self.xhismax and self.fit_sig:
             sizeparms=(('Min Size Criteria Met', self.mpx_crit_met),
-                       ('Diam Est (%s)'%self.units, r2(self.xhismax)), 
-                       ('Sigma Est (%s)'%self.units, r2(self.fit_sig)))
+                       ('Diam Est (%s)'%self.UNITS, r2(self.xhismax)), 
+                       ('Sigma Est (%s)'%self.UNITS, r2(self.fit_sig)))
         else:
             sizeparms=(('Min Size Criteria Met', self.mpx_crit_met),
-                       ('Diam Est (%s)'%self.units, 'None'), 
-                       ('Sigma Est (%s)'%self.units, 'None'))   
+                       ('Diam Est (%s)'%self.UNITS, 'None'), 
+                       ('Sigma Est (%s)'%self.UNITS, 'None'))   
         return sizeparms
 
     @property
@@ -777,10 +786,10 @@ class ImageDestroyer(object):
 
 
         plt.title('%dX %s Distribution (%s %s < %s < %s  %s)' %(self.mag, xattr, round(x_min,0), \
-                                                                self.units, xname, round(x_max,0), self.units))
+                                                                self.UNITS, xname, round(x_max,0), self.UNITS))
         
         plt.ylabel('Counts')
-        plt.xlabel(('%s (%s)') %(xname, self.units) )
+        plt.xlabel(('%s (%s)') %(xname, self.UNITS) )
 
         ### Custom major xticks ###
         plt.minorticks_on() #Minor ticks automatically taken care of          
@@ -877,7 +886,7 @@ class ImageDestroyer(object):
         imjmacro.append('File.close(d);') 
 
 
-        imjmacro.append('run("Set Scale...", "distance=1 known=%s pixel=1 unit=%s");'%(self.min_pixel_length, self.units))
+        imjmacro.append('run("Set Scale...", "distance=1 known=%s pixel=1 unit=%s");'%(self.min_pixel_length, self.UNITS))
         #imjmacro.append('setAutoThreshold("Default dark");')
         imjmacro.append('//run("Threshold...");')  #This brings up threshold toolbar/menu
         ### If adjustment manually set, do that.  Otherwise, autoadjust ###
@@ -967,12 +976,12 @@ class ImageDestroyer(object):
         analysis.  Optional infile can be passed; otherwise, this uses self.results_file'''
         if not infile:
             infile=self.results_file
-        df=to_dataframe(from_file(results_manager, infile, parsecomments=True))
+        df = to_dataframe(from_file(results_manager, infile, parsecomments=True))
         ### Add two psuedo columns length and psuedod (diamter converstion assuming a circle) ###
-        lengths=DataFrame((np.sqrt(df.area)), columns=['length'])
-        psuedo_d=DataFrame((1.13*np.sqrt(df.area)), columns=['psuedo_d'])
-        df=df.join(lengths) ; df=df.join(psuedo_d)  #Could prolly do this in one merge but lazy
-        self.digiframe=MultiHistMaster(dataframe=df) #Populated when count results is called       
+        lengths = DataFrame((np.sqrt(df.area)), columns=['length'])
+        psuedo_d = DataFrame((1.13*np.sqrt(df.area)), columns=['psuedo_d'])
+        df = df.join(lengths) ; df=df.join(psuedo_d)  #Could prolly do this in one merge but lazy
+        self.digiframe = MultiHistMaster(dataframe=df) #Populated when count results is called       
         self.digiframe._set_binnumber_from_data_binwidth('length', self.min_pixel_length)         
 
     def _quick_slice(self, wrange, series):
@@ -1154,13 +1163,15 @@ class ImageDestroyer(object):
         dataset=self.count_results[attstyle]
 
         try:
-            counts, bins, patches=self.histogram
+            counts, bins, patches = self.histogram
         except Exception:
             raise AttributeError('Before calling coverage_analysis_advanced, hist and best fit must be run \
                                   otherwise, internal histogram is never stored.')
         
         ### Set keywords if not defaulted
-        if not curve_cutoff: curve_cutoff=self.about_zero
+        if not curve_cutoff:
+            logger.debug('Setting curve_cutoff coverage_analysis_advanced to self.bout_zero')
+            curve_cutoff = self.about_zero
 
         ### Take single particle mean from optimized guassian.  If no autogaussian, takes it from histogram max.
         if self.fit_mean:
@@ -1170,15 +1181,21 @@ class ImageDestroyer(object):
                 
         ### Set bounds on singles low/high from manual parameters, autogaussian or histogram
         if not single_low:
-            if self.fit_min_max:
+            if self.fit_min_max[0]:
                 single_low=self.fit_min_max[0] #Uses fitmax as entry condition to save redundancy below
             else:
+                logger.warning('Coverage analysis lower particle size cutoff could not be'
+                               ' derived from FIT!  Instead, applying it as half the diameter'
+                               ' of the max bin on the diameter histogram.')
                 single_low=0.5*self.xhismax
                 
         if not single_high:
-            if self.fit_min_max:
+            if self.fit_min_max[1]:
                 single_high=self.fit_min_max[1]
             else:
+                logger.warning('Coverage analysis upper particle size cutoff could not be'
+                 ' derived from FIT!  Instead, applying it as 1.5 times the diameter'
+                 ' of the max bin on the diameter histogram.')
                 single_high=1.5*self.xhismax       
 
         ### Ensure floats        
@@ -1336,10 +1353,10 @@ class ImageDestroyer(object):
         ### User can either do this for length, or 
         if attstyle=='length':
             wrange=(8.8, 88.0) #d=10-100nm                
-            xlabel='Pixel Length %s'%self.units
+            xlabel='Pixel Length %s'%self.UNITS
         elif attstyle=='psuedo_d':
             wrange=(10.0, 100.0)  #Diameter upconversion constant (d=10,100)
-            xlabel='Approx. Diameter %s'%self.units
+            xlabel='Approx. Diameter %s'%self.UNITS
             
         elif attstyle=='area':
             wrange=(0.0, 7000.0)
@@ -1438,12 +1455,12 @@ class ImageDestroyer(object):
 
                 fmat = lambda x:str(round(x,1))  
 
-                plt.title('Guassian Fit Range   %s - %s (%s)'%(fmat(center_x*(1.0-l_left)), fmat(center_x), self.units))
+                plt.title('Guassian Fit Range   %s - %s (%s)'%(fmat(center_x*(1.0-l_left)), fmat(center_x), self.UNITS))
 
 
                 ### Add text about guassian moments                     
                 xpos=.7*float(plt.xlim()[1]) ; ypos=.7*float(plt.ylim()[1])
-                fmat=lambda x: str( round(x,1)) + ' ' + self.units
+                fmat=lambda x: str( round(x,1)) + ' ' + self.UNITS
                 plt_txt='$ \mu=$ %s \n $\sigma=$ %s\n x=%s\n y=%s' \
                     %(fmat(self.fit_mean), fmat(self.fit_sig),  fmat(self.xhismax ),  str(self.yhismax)+' counts' )  
                 plt.text(xpos, ypos, plt_txt, fontsize=15)  

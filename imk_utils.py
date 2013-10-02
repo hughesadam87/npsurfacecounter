@@ -1,46 +1,68 @@
 from operator import attrgetter
 from math import pi, sqrt
 import os, shutil
+import os.path as op
+
+import logging
+logger = logging.getLogger(__name__)
+
+def logmkdir(fullpath):
+    ''' Makes directory path/folder, and logs.'''
+    logger.info('Making directory: "%s"' % fullpath)
+    os.mkdir(fullpath)
+
+def logwritefile(fullpath):
+    ''' Open a file in 'w' mode; log that it has been opened. '''
+    logger.info('Making writable outfile: "%s"' % fullpath)
+    return open(fullpath, 'w')  #Note, user has to close
 
 def get_shortname(filepath, cut_extension=False):
-    ''' simply get the filename of fullpath.  Cut extension will remove file extension'''
+    ''' Return basename of filepath, with or without extension'''
+
     shortname=os.path.basename(filepath) 
     if cut_extension:
-        shortname=os.path.splitext(shortname)[0]  #Cut file extension
+        shortname = op.splitext(shortname)[0]  #Cut file extension
     return shortname
 
 def sort_summary(summary_file, delim='\t'):
-    f=open(summary_file, 'r')
-    lines=f.readlines()
-    lines=[line.strip().split(delim) for line in lines]
-    header=lines.pop(0)
+    
+    logger.info('Attempting to sort summary file: "%s"' % summary_file)
+    f = open(summary_file, 'r')
+    lines = f.readlines()
+    lines = [line.strip().split(delim) for line in lines]
+    header = lines.pop(0)
     f.close()
+
     ### Tries to sort by filenames then magnification of form 'f1_3000.tif'
     try:
+        logger.info('Trying to sort by form: "f1_30000.tif"') #see images from (8/13/12)
         lines=sorted(lines, key=lambda item: (item[0].split('_')[0], int( item[0].split('_')[1].strip('.tif')) ) )
     except Exception:
+        logger.info('Could not sort by7 form: "f1_3000.tif')
+
         ### Following exceptions are adhoc fixes for non-standard run names.
-        ## Test for style ## F1_b2_30kx... (8/13/12)
         firstname=lines[0][0].split('_')
         if 'f' in firstname[0] and 'b' in firstname[1]:
             try:
+                logger.info('Trying to sort by form: "F1_b2_30kx"') #see images from (8/13/12)
                 lines=sorted(lines, key=lambda item: (item[0].split('_')[1],(item[0].split('_')[0] ) ))
             except Exception:
-                print 'Could not sort summary file, failed at A'
-
+                logger.info('Could not sort by form: "F1_b2_30kx"')
 
         ## Test for style ## 8_b2_f1_... (8/6/12)                        
         elif 'f' in firstname[2] and 'b' in firstname[1]:
             try:
+                logger.info('Trying to sort by form: "8_b2_f1"')
                 lines=sorted(lines, key=lambda item: (item[0].split('_')[1],(item[0].split('_')[2] ),(item[0].split('_')[3] ) ))
             except Exception:
-                print 'Could not sort summary file, failed at B'
+                logger.info('Could not sort by form: "8_b2_f1"')
 
        ### TO ADD ###     
        ## Test for style ## 8_b2_f1_... (8/6/12) (test for 822)                       
 
     else:
-        f=open(summary_file, 'w')
+        logger.info('Sorting successful, outputting summary.')
+        f = logwritefile(summary_file, 'w')
         f.write(delim.join(header)+'\n\n')
         for i, line in enumerate(lines):
             ### Add a row divider between fibers
@@ -55,10 +77,11 @@ def sort_summary(summary_file, delim='\t'):
 def get_files_in_dir(directory):
     ''' Given a directory, this returns just the files in said directory.  Surprisingly
         no one line solution exists in os that I can find '''
+    
     files=[]
     for item in os.listdir(directory):
         if os.path.isfile(os.path.join(directory, item)):
-            files.append(directory+'/'+item)
+            files.append(op.join(directory, item))
     return files
 
 ### The following methods navigate subdirectories and return file names in dictionaries ###
@@ -67,6 +90,7 @@ def magdict_foldersbymag(indir):
     ''' Makes a dictionary keyed by magnification of all files in subdirectories stored by magnification.
     Key=mag
     Value=Rootdirectory, [files]'''
+    
     scaledict={}
     walker=os.walk(indir, topdown=True, onerror=None, followlinks=False)
     ### Walk subdirectories
@@ -76,14 +100,12 @@ def magdict_foldersbymag(indir):
         mag=d  #Value for magnification is in filename
         try:
             mag=int(mag)  #Raw magnification
-        except:
-            ValueError
+        except ValueError:
             try:
                 mag=int(mag.strip('k') )
                 mag=mag*1000 #SCALE UP BY 1000            
-            except:
-                ValueError
-                print 'failed to convert', d
+            except ValueError:
+                logger.error('failed to convert', d) 
             else:
                 outfiles=get_files_in_dir(rootpath+'/'+d)
                 scaledict[mag]=(d, tuple(outfiles) )
@@ -99,9 +121,11 @@ def magdict_foldersbyrun(indir):
     any files that were not understood.
     Key=mag
     Value=Rootdirectory, [files]'''
-    raise NotImplementedError('This module is broken, really it is tough to return key by \
-    mag because of how directory is structured.  Makes for sense to just use rundict_foldersbyrun\
-    and modify main_script.py to make right outdir')
+    
+    raise NotImplementedError('This function is broken, really it is tough to return key by'
+    'mag because of how directory is structured.  Makes for sense to just use rundict_foldersbyrun'
+    'and modify main_script.py to make right outdir')
+  
     filedict={}
     walker=os.walk(indir, topdown=True, onerror=None, followlinks=False)
     ### Walk subdirectories
