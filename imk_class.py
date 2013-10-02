@@ -1403,8 +1403,10 @@ class ImageDestroyer(object):
 
                 ### Trace and plot line automatic gaussian/line of best fit
                 if self.fit_min_max:
-                    xfunc=np.arange(self.fit_min_max[0], self.fit_min_max[1], self.dx)
-                    plt.plot(xfunc, self.best_fit(xfunc), color='blue')
+                    fitmin, fitmax = self.fit_min_max[0], self.fit_min_max[1]
+                    if fitmin and fitmax:                    
+                        xfunc=np.arange(self.fit_min_max[0], self.fit_min_max[1], self.dx)
+                        plt.plot(xfunc, self.best_fit(xfunc), color='blue')
                     
                 plt.plot(bincenters, self.best_fit(bincenters), color='black', ls='--')
                 

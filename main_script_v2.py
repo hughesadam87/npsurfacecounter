@@ -194,7 +194,7 @@ def main_go(indir, outdir, all_parms, compact_results=True):
             
             
     ### April 4/8/13 Coverage tests            
-    output_testsuite(testdic, apriltest)
+#    output_testsuite(testdic, apriltest)
                     
             
     ### Close files ###
