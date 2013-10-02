@@ -16,6 +16,10 @@ import matplotlib.mlab as mlab
 from scipy.stats import norm
 from numpy.random import shuffle as shuffitup
 
+import logging
+logger = logging.getLogger(__name__)
+from logger import logclass
+
 def digitize_by(df, digitized_bins, axis=0, avg_fcn='mean', weight_max=None):
     ''' Takes in an array of digitized bins, and then restructures a dataframe
     based on the bin array'''
@@ -130,10 +134,7 @@ def bin_above_below(series, left, right, height, shuffle=True):
         below=sample.iloc[0:height] #just doing sample[] works too
         above=sample.iloc[height ::]
 
-    return below,above
-        
-        
-    
+    return below, above
 
 def range_slice(series, start, stop, style='value'):
     ''' Convienence wrapper to slice a single column of a df by either value or index.  Force user to specify
@@ -300,6 +301,7 @@ def get_binadjustment(array, bin_number):
     return np.arange(vmin, vmax, binstep) 
 
 
+@logclass(log_name=__name__ , public_lvl='debug')
 class MultiHistMaster(object):
     ''' Takes in multidimensional dataframe and a bin number.  It then digitizes all
     data columns equally along the bins.  Basically this means I can take multi-dimensional 
@@ -342,13 +344,11 @@ class MultiHistMaster(object):
         return np.digitize(self.df[column].values, adjusted_bins)        
     
     def single_histogram(self, column):
-        ''' Merely returns 1d elements of histogram for column being a string pointing to name in dataframe column.'''
-                
+        ''' 1d elements of histogram for column being a string pointing to name in dataframe column.'''                
         return np.histogram(self.df[column], self.bin_number)   
 
-        
     def subset(self, *columns):
-        ''' Will return a subset of a dataframe, with optional sorting by column.'''
+        ''' Subset of a dataframe, with optional sorting by column.'''
         return self.df.reindex(columns=columns)
          
     
