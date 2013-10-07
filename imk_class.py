@@ -390,6 +390,7 @@ class ImageDestroyer(object):
             
             Not a property because it's better to call from main script before all internal fit parameters
             are changed when the scale_data_from_hist() method is called.'''
+        
         if self.uncorrected_dmean:
             d = self.uncorrected_dmean
             coverage=self.noiseless_bw_coverage
@@ -432,18 +433,26 @@ class ImageDestroyer(object):
         return roundint(float(nps) * self.total_sensing_area / self.sampled_area  ) 
 
     @property
-    def _np_total_uncorrected(self):
-        '''Nanoparticle estimation before throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
+    def _np_total_includingnoise(self):
+        '''Nanoparticle estimation BEFORE throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
         to full fiber. Only really useful for summary stuff.'''
-        return ((self.noise_particles+ self.single_counts + self.flat_particle_equiv\
-                 + self.double_particle_equiv+self.super_particle_equiv ) )      
+        return self.noise_particles+ self.single_counts + self.flat_particle_equiv\
+                 + self.double_particle_equiv+self.super_particle_equiv        
     
     @property
-    def _np_total_true_uncorrected(self):
-        '''Nanoparticle estimation before throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
+    def _np_total_nonoise(self):
+        '''Nanoparticle estimation AFTER throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
         to full fiber. Only really useful for summary stuff.'''
-        return ((self.noise_particles+ self.single_counts + self.true_flat_count\
-                 + self.true_doubles + self.true_super_count ) )          
+        return  self.single_counts + self.flat_particle_equiv \
+                 + self.double_particle_equiv+self.super_particle_equiv        
+
+
+    @property
+    def _np_total_true_includingnoise(self):
+        '''Nanoparticle estimation BEFORE throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
+        to full fiber. Only really useful for summary stuff.'''
+        return self.noise_particles+ self.single_counts + self.true_flat_count\
+                 + self.true_doubles + self.true_super_count 
 
     @property
     def true_doubles(self):
@@ -587,18 +596,18 @@ class ImageDestroyer(object):
 
                ### Relative np particle ratio (Yes this should be uncorrected.  Note uncorrected means including noise
                ### and not scaled to the entire fiber.
-               ('(%)noise_ratio_equiv' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_uncorrected)))),
-               ('(%)singles_ratio_equiv',r2(100.0* (float(self.single_counts) / float(self._np_total_uncorrected)))),
-               ('(%)doubles_ratio_equiv' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_uncorrected)))),               
-               ('(%)mids_ratio_equiv',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_uncorrected)))),
-               ('(%)bigs_ratio_equiv',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_uncorrected)))),
+               ('(%)noise_ratio_equiv' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_includingnoise)))),
+               ('(%)singles_ratio_equiv',r2(100.0* (float(self.single_counts) / float(self._np_total_includingnoise)))),
+               ('(%)doubles_ratio_equiv' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_includingnoise)))),               
+               ('(%)mids_ratio_equiv',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_includingnoise)))),
+               ('(%)bigs_ratio_equiv',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_includingnoise)))),
     
         ### Ratios of particle weights when I don't break flats/doubles/supers into equivalents
-        ('(%)noise_ratio_actual' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_true_uncorrected)))),
-        ('(%)singles_ratio_actual',r2(100.0* (float(self.single_counts) / float(self._np_total_true_uncorrected)))),
-        ('(%)doubles_ratio_actual' ,r2(100.0* (float(self.true_doubles) / float(self._np_total_true_uncorrected)))),               
-        ('(%)mids_ratio_actual',r2(100.0* (float(self.true_flat_count) / float(self._np_total_true_uncorrected)))),
-        ('(%)bigs_ratio_actual',r2(100.0* (float(self.true_super_count) / float(self._np_total_true_uncorrected)))))    
+        ('(%)noise_ratio_actual' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_true_includingnoise)))),
+        ('(%)singles_ratio_actual',r2(100.0* (float(self.single_counts) / float(self._np_total_true_includingnoise)))),
+        ('(%)doubles_ratio_actual' ,r2(100.0* (float(self.true_doubles) / float(self._np_total_true_includingnoise)))),               
+        ('(%)mids_ratio_actual',r2(100.0* (float(self.true_flat_count) / float(self._np_total_true_includingnoise)))),
+        ('(%)bigs_ratio_actual',r2(100.0* (float(self.true_super_count) / float(self._np_total_true_includingnoise)))))    
     
              
 
@@ -607,11 +616,11 @@ class ImageDestroyer(object):
         ''' Particle analysis light summary parameters'''
         return(('nanoparticles', self.np_total_corrected),   
                ('IMJ particles (no noise)', self.particles_total_corrected), 
-               ('(%)noise_ratio_equiv' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_uncorrected)))),
-               ('(%)singles_ratio_equiv',r2(100.0* (float(self.single_counts) / float(self._np_total_uncorrected)))),
-               ('(%)doubles_ratio_equiv' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_uncorrected)))),               
-               ('(%)mids_ratio_equiv',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_uncorrected)))),
-               ('(%)bigs_ratio_equiv',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_uncorrected)))))
+               ('(%)noise_ratio_equiv' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_includingnoise)))),
+               ('(%)singles_ratio_equiv',r2(100.0* (float(self.single_counts) / float(self._np_total_includingnoise)))),
+               ('(%)doubles_ratio_equiv' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_includingnoise)))),               
+               ('(%)mids_ratio_equiv',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_includingnoise)))),
+               ('(%)bigs_ratio_equiv',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_includingnoise)))))
     @property
     def np_size_parms(self):
         if self.xhismax and self.fit_sig:
@@ -937,8 +946,6 @@ class ImageDestroyer(object):
             imjmacro.append('saveAs("Tiff", "%s");' %self.thresh_file  )           
 
 
-
-
         #if out_summary_full:
             #self.results_file="%s/%s_stats_full.txt" %(self.outpath,self.shortname)
             #imjmacro.append('saveAs("Results", "%s");' %self.results_file )
@@ -966,10 +973,17 @@ class ImageDestroyer(object):
         return 
 
     def run_macro(self):  
-        ## To run non-interactively in batch mode, ImageJ has to read a macro from disk.
-        ## The third parameter is the image to be processed.
+        # To run non-interactively in batch mode, ImageJ has to read a macro from disk.
+        # The third parameter is the image to be processed.
+
         command = "%s -batch %s" % (path_to_imagej, self.macrofile) 
-        p = subprocess.call(command, shell=True)#, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info("Running IMJMACRO: %s" % command)
+
+        # Output to /dev/null (which auto-deletes)
+        with open(os.devnull, 'w') as dnull:
+            p = subprocess.call(command, shell=True, stdout=dnull)# stderr=subprocess.PIPE)
+            
+        logger.info('IMJ Counting complete!')
 
     def initialize_count_parameters(self, infile=None):
         ''' Initialize a class for storing imagej statistical data that is necessary for advanced
@@ -1286,14 +1300,15 @@ class ImageDestroyer(object):
         super_range=(flat_range[1], max(dataset))
         supers=self._quick_slice(super_range, dataset)
         self.true_super_count=len(supers)
-        ### Reduce big particles in many mean-sized particles
+        
+        # Reduce big particles into multiples of mean-sized particles        
         if super_adj_style == None:
-            supers_count=supers.apply(lambda x: x/single_mean).sum()
-            bsasupers=supers_count*mean_particle_bsanumber  
+            supers_count = supers.apply(lambda x: x/single_mean).sum()
+            bsasupers = supers_count*mean_particle_bsanumber  
 
         elif super_adj_style == 'hemisphere':
-                ### Number of np's is the ratio of volume of halfsphere to full average NP
-            supers_count=supers.apply(lambda x: 0.5 * (x**3 / single_mean**3)).sum()             
+            # Number of np's is the ratio of volume of halfsphere to full average NP
+            supers_count = supers.apply(lambda x: 0.5 * (x**3 / single_mean**3)).sum()             
             
             ### If fill in cracks, use all the surface area of the total number of NP's in the halfsphere 
             ### as bsa binding sites
@@ -1491,7 +1506,7 @@ class ImageDestroyer(object):
             histogram or best fit curve.
             
             Parameters:
-            --------------------
+            -----------
             
                newmean: Mean to which user wants to force into binned data.
                try_curve: If true, this will scale based on the mean of the
@@ -1502,7 +1517,7 @@ class ImageDestroyer(object):
                                     replotted or not.
                           
             Explanation:
-            --------------------
+            ------------
                 Images of particles taken from SEM for example often have
                 thresholding errors that cause under or overestimation of 
                 particle sizes.  As such, the binned data tends to incorrectly
@@ -1580,13 +1595,20 @@ class ImageDestroyer(object):
 
         ### Essential parameters, coverage, nps, bsa, sizing
         elif style.lower()=='lite':
-            outparms=(('Filename', self.shortname),                
+            outparms=(('Image', self.shortname),                
                       ('bw_nonoise(%)',r2(self.noiseless_bw_coverage)),
-                      ('anal_part_error',r2(self.particle_fitting_error)),                      
+#                      ('anal_part_error',r2(self.particle_fitting_error)),                      
                       ('corr_cov(%)',r2(self.mean_corrected_coverage)),                      
-                      ('nanoparticles', self.np_total_corrected),
-                      ('bsa total', self.bsa_total))
-            outparms=outparms+self.np_size_parms
+                      ('nps', self.np_total_corrected),
+#                      ('bsa', self.bsa_total),
+                      ('singles(%)', r2(100.0 * (float(self.single_counts)) / float(self._np_total_nonoise))),
+                      ('doubles(%)', r2(100.0 * (float(self.double_particle_equiv)) / float(self._np_total_nonoise))),
+                      ('flats(%)', r2(100.0 * (float(self.flat_particle_equiv)) / float(self._np_total_nonoise))),
+                      ('super(%)', r2(100.0 * (float(self.super_particle_equiv)) / float(self._np_total_nonoise))),
+                    )
+            
+            #XXX Add some additional parameters related to npsize estimate
+           # outparms=outparms+self.np_size_parms
 
         ### Detailed coverage, particles, proteins, sizing
         elif style.lower()=='detailed':

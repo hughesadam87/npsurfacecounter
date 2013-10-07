@@ -6,6 +6,47 @@ import os.path as op
 import logging
 logger = logging.getLogger(__name__)
 
+def texorate(infile, fontsize='tiny'):
+    ''' Takes tab-delmited summary file; return latex table.  
+        FIRST LINE USED AS HEADER.
+        
+        Note: '\t' is baked in! (see .split('\t')  '''
+        
+    lines = open(infile, 'r').readlines()
+    
+    # Strip newlines, remove blank lines
+    lines = [line.strip() for line in lines if line]
+    lines = [line for line in lines if line]
+    
+    # Format lines for latex
+    
+    table = '%\documentclass{article}\n'
+    table += r'%\begin{document}'
+    table += '\n\n'    
+    table += r'{\%s' % fontsize
+    table += '\n'
+
+    #Table header {c | c  etc...}
+    table += r'\begin{center}'
+    table += '\n'
+    table += r'\begin{tabular}{ |'
+    for i in range(len(lines[0].split('\t'))):
+        table += 'c |'
+    table += '} \hline\n'
+    
+    for idx, line in enumerate(lines):
+        if idx == 0:
+            # Bool text top row
+            line = '\t'.join([r'{ \bf %s }' % word for word in line.split('\t')])
+
+        table += line.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')          
+        table += '\\\\ \hline\n'
+               
+    table += '\end{tabular}\n\end{center}\n}'    
+    table += '\n\n%\end{document}'
+
+    return table
+
 def logmkdir(fullpath):
     ''' Makes directory path/folder, and logs.'''
     logger.info('Making directory: "%s"' % fullpath)

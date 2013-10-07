@@ -15,14 +15,14 @@ from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, mak
 from imk_class import ImageDestroyer
 from man_adjust import manual_adjustments
 from scipy import integrate
-from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile, logmkdir
+from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile,\
+     logmkdir, texorate
 
 ## Histogram plot parameters
 from histogram_params import size_hists, grey_hissy, circ_hissy
 
 OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive
     
-
 def main(indir, outdir, all_parms, compact_results = True):   
     ''' Script to take a batch of SEM images and perform customized imagej and 
     python-based analysis.  Mostly wraps imk_class.py.
@@ -64,7 +64,7 @@ def main(indir, outdir, all_parms, compact_results = True):
     ### Perpare run-summary files ### (used in sorting at end of script, so don't remove yet)
     summary_filename = op.join(outdir, 'full_summary.xls')
     light_summary_filename = op.join(outdir, 'light_summary.xls')
-    coverage_summary = op.join(outdir+'detailed_summary.xls')
+    coverage_summary = op.join(outdir, 'detailed_summary.xls')
     
     full_summary = logwritefile(summary_filename)
     light_summary = logwritefile(light_summary_filename)
@@ -107,6 +107,7 @@ def main(indir, outdir, all_parms, compact_results = True):
             imbuster.make_imjmacro()
             imbuster.run_macro()
             imbuster.initialize_count_parameters() #Store results in dataframe objects
+            logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
             imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
@@ -219,10 +220,15 @@ def main(indir, outdir, all_parms, compact_results = True):
     ### Close files ###
     full_summary.close() ;  light_summary.close() ; cov_summ.close() 
 
+    # Make .tex file for light summary
+    textable = texorate(light_summary_filename)
+    with open( op.join(outdir,'summarytable.tex'), 'w') as o:
+        o.write(textable)    
+        
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']
     outsums=[summary_filename, light_summary_filename, coverage_summary]
-    
+        
     for sumfile in outsums:
         logger.info("Attempting sort summary.") #what's this doing?
         sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
@@ -237,9 +243,13 @@ def main(indir, outdir, all_parms, compact_results = True):
 ### MAIN PROGRAM ###
 if __name__ == '__main__':	
     
-    from analysis_parms import all_parms    
+    from analysis_parms import all_parms  
+    
+    if '-v' in sys.argv:
+        configure_logger(screen_level='debug', name=__name__)
+    else:
+        configure_logger(screen_level='info', name=__name__)
 
-    configure_logger(screen_level='debug', name=__name__)
     
     #Avoid ./ notation, it will confuse output scripts/macros
     inroot = op.abspath('testdata')
