@@ -7,7 +7,7 @@ from config import from_file, to_dic #From pyrecords
 
 import logging
 logger = logging.getLogger(__name__)
-from logger import logclass, configure_logger
+from logger import logclass, configure_logger, LogExit
 
 ###Local module imports
 from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
@@ -270,7 +270,7 @@ if __name__ == '__main__':
 
 	try:
             main(indir, outdir, all_parms)
-	except Exception as exc:
+	except LogExit as exc:
 	    logger.critical('%s ANALYSIS FAILED! RETURNED EXCEPTION:\n%s' % (folder, exc))
 
 
