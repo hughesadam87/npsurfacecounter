@@ -245,10 +245,11 @@ if __name__ == '__main__':
     
     from analysis_parms import all_parms  
     
+    #Haven't included anything special for debuging; need argparse/CLI
     if '-v' in sys.argv:
-        configure_logger(screen_level='debug', name=__name__)
-    else:
         configure_logger(screen_level='info', name=__name__)
+    else:
+        configure_logger(screen_level='warning', name=__name__)
 
     
     #Avoid ./ notation, it will confuse output scripts/macros
@@ -266,6 +267,10 @@ if __name__ == '__main__':
         
         logger.info( 'Analyzing folder: "%s"' % folder )
         logger.debug( 'Analysis parms are: %s' % all_parms )
-        main(indir, outdir, all_parms)
+
+	try:
+            main(indir, outdir, all_parms)
+	except Exception as exc:
+	    logger.critical('%s ANALYSIS FAILED! RETURNED EXCEPTION:\n%s' % (folder, exc))
 
 
