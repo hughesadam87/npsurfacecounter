@@ -1212,7 +1212,7 @@ class ImageDestroyer(object):
                 single_low=self.fit_min_max[0] #Uses fitmax as entry condition to save redundancy below
             else:
                 logger.warning('Coverage analysis lower particle size cutoff could not be'
-                               ' derived from FIT!  Instead, applying it as half the diameter'
+                               ' derived from guassian fit!  Instead, applying it as half the diameter'
                                ' of the max bin on the diameter histogram.')
                 single_low=0.5*self.xhismax
                 

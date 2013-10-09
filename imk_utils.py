@@ -103,7 +103,7 @@ def sort_summary(summary_file, delim='\t'):
 
     else:
         logger.info('Sorting successful, outputting summary.')
-        f = logwritefile(summary_file, 'w')
+        f = logwritefile(summary_file)
         f.write(delim.join(header)+'\n\n')
         for i, line in enumerate(lines):
             ### Add a row divider between fibers

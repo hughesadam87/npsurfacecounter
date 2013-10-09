@@ -110,7 +110,12 @@ def main(indir, outdir, all_parms, compact_results = True):
             logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
-            imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+            try:
+                imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: first hist and bestfit ('
+                   'THIS SHOULD NOT FAIL):\n%s' %(infile_shortname, e))
+                continue                
               
             #########################
             ## Particle sizing ######
@@ -131,8 +136,14 @@ def main(indir, outdir, all_parms, compact_results = True):
                                                                                  
             ### ADVANCED COVERAGE ANALYSIS       
             logger.info('Running coverage analysis')
-            imbuster.coverage_analysis_advanced(flat_high=float(size_parms['flat_high']), single_low=size_parms['sing_low'],
+            try:
+                imbuster.coverage_analysis_advanced(flat_high=float(size_parms['flat_high']), single_low=size_parms['sing_low'],
                                                     single_high=size_parms['sing_high'], super_adj_style='hemisphere', super_fill_in_cracks=False)
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: coverage analysis:\n%s' %(infile_shortname, e))
+                continue
+                                                
+                
             logger.info('Coverage analysis completed')
 
 
@@ -184,9 +195,9 @@ def main(indir, outdir, all_parms, compact_results = True):
                                     histsize['color']='red'
                             imbuster.super_histogram(htype, shadeattr=None, colorattr=None, lineattr=att, mapx=None, \
                                                  special_outpath=hdir, **histsize)
-            except Exception as e:
-                logger.critical('Histogram analysis failed.  Returned error:\n%s' % e)
-                                    
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: Histogram analysis:\n%s' %(infile_shortname, e))
+                continue                
             ### April 4/8/13 Coverage tests
      #       logger.warn('Running adhoc method "test_suite_lowcoverage" from 4/8 testing.')
      #       testdic = test_suite_lowcoverage(imbuster, testdic)            
@@ -244,17 +255,18 @@ def main(indir, outdir, all_parms, compact_results = True):
 if __name__ == '__main__':	
     
     from analysis_parms import all_parms  
+
+    #Avoid relative paths, it will confuse output scripts/macros
+    inroot = op.abspath('testdata')
+    outroot = op.abspath('RunResults')
     
     #Haven't included anything special for debuging; need argparse/CLI
     if '-v' in sys.argv:
-        configure_logger(screen_level='info', name=__name__)
+        configure_logger(screen_level='info', logfile=op.join(outroot, 'log.txt'), 
+                         name=__name__)
     else:
-        configure_logger(screen_level='warning', name=__name__)
-
-    
-    #Avoid ./ notation, it will confuse output scripts/macros
-    inroot = op.abspath('testdata')
-    outroot = op.abspath('RunResults')
+        configure_logger(screen_level='warning',logfile=op.join(outroot, 'log.txt'),
+                         name=__name__)
     
     walker=os.walk(inroot, topdown=True, onerror=None, followlinks=False)
  
@@ -268,9 +280,7 @@ if __name__ == '__main__':
         logger.info( 'Analyzing folder: "%s"' % folder )
         logger.debug( 'Analysis parms are: %s' % all_parms )
 
-	try:
-            main(indir, outdir, all_parms)
-	except LogExit as exc:
-	    logger.critical('%s ANALYSIS FAILED! RETURNED EXCEPTION:\n%s' % (folder, exc))
+        main(indir, outdir, all_parms)
+
 
 
