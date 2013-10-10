@@ -420,7 +420,6 @@ Oct_3={
     'f2_30000_2_auto.tif': ((None), (3, 0, 3063, 1983), (new_22)),    
     }
 
-#alldics=[sept_5_adj ,aug_13_adj , aug_6_adj ,oct_23_adj, special_renames, january_14 ]
 alldics=[sept_26]#, aug_22, oct_23_adj, march_7] #name conflicts
 manual_adjustments={}
 ### Make sure dictionaries don't have dupliate keys before merger ###

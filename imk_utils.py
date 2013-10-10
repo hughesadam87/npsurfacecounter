@@ -234,8 +234,7 @@ def rundict_foldersbyrun(indir):
     warnings='\t'.join(warnings)
     return filedict, warnings    
 
-                
-        
+                        
         #mag=d  #Value for magnification is in filename
         #try:
             #mag=int(mag)  #Raw magnification
@@ -269,6 +268,7 @@ def add_keylist(indic, key, val):
         indic[key]=[val]
     return indic    
 
+
 def test_suite_lowcoverage(imbuster, indic=None):
     '''Test developed on 4/8/13 to output various quanties of interest in
        trying to assess accuracy in low coverage fibers.  Probes quantitie like
@@ -276,7 +276,8 @@ def test_suite_lowcoverage(imbuster, indic=None):
        area of particles in the distribution.
        
        indic= Dictinoary to accumulate results over several runs.'''
-    if not indic: indic={}
+    if not indic: 
+        indic={}
     add_keylist(indic, 'Image', imbuster.shortname)
     xmin,xmax=imbuster.fit_min_max
     xmean=imbuster.fit_mean

@@ -21,7 +21,7 @@ from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile,\
 ## Histogram plot parameters
 from histogram_params import size_hists, grey_hissy, circ_hissy
 
-OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive
+OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive 
     
 def main(indir, outdir, all_parms, compact_results = True):   
     ''' Script to take a batch of SEM images and perform customized imagej and 
@@ -226,27 +226,32 @@ def main(indir, outdir, all_parms, compact_results = True):
             
     ### April 4/8/13 Coverage tests            
 #    output_testsuite(testdic, apriltest)
-                    
-            
+                                
     ### Close files ###
     full_summary.close() ;  light_summary.close() ; cov_summ.close() 
 
     # Make .tex file for light summary
-    textable = texorate(light_summary_filename)
-    with open( op.join(outdir,'summarytable.tex'), 'w') as o:
-        o.write(textable)    
+    logger.info("Attempting texorate")
+    try:
+        textable = texorate(light_summary_filename)
+        with open( op.join(outdir,'summarytable.tex'), 'w') as o:
+            o.write(textable)    
+    except (Exception, LogExit):
+        logger.critical('Texorate FAILED: %s' % light_summary_filename)
         
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']
     outsums=[summary_filename, light_summary_filename, coverage_summary]
-        
+
+    logger.info("Attempting sort summary.") #what's this doing?        
     for sumfile in outsums:
-        logger.info("Attempting sort summary.") #what's this doing?
-        sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
-        for ext in out_exts:
-            shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
-    #sort_summary(light_summary_filename, delim=OUT_DELIM)
-    #sort_summary(coverage_summary, delim=OUT_DELIM)
+        try:        
+            sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
+            for ext in out_exts:
+                shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
+
+        except (Exception, LogExit) as e:
+            logger.warn('%s sort summary failed!' % sumfile )
 
     
                 
@@ -259,13 +264,14 @@ if __name__ == '__main__':
     #Avoid relative paths, it will confuse output scripts/macros
     inroot = op.abspath('testdata')
     outroot = op.abspath('RunResults')
+    logfile=op.join(outroot, 'runlog.txt')
     
     #Haven't included anything special for debuging; need argparse/CLI
     if '-v' in sys.argv:
-        configure_logger(screen_level='info', logfile=op.join(outroot, 'log.txt'), 
+        configure_logger(screen_level='info', logfile=logfile, 
                          name=__name__)
     else:
-        configure_logger(screen_level='warning',logfile=op.join(outroot, 'log.txt'),
+        configure_logger(screen_level='warning',logfile=logfile,
                          name=__name__)
     
     walker=os.walk(inroot, topdown=True, onerror=None, followlinks=False)
