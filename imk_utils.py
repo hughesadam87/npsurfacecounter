@@ -6,7 +6,7 @@ import os.path as op
 import logging
 logger = logging.getLogger(__name__)
 
-def texorate(infile, fontsize='tiny'):
+def texorate(infile, fontsize='tiny', sort=True):
     ''' Takes tab-delmited summary file; return latex table.  
         FIRST LINE USED AS HEADER.
         
@@ -17,6 +17,10 @@ def texorate(infile, fontsize='tiny'):
     # Strip newlines, remove blank lines
     lines = [line.strip() for line in lines if line]
     lines = [line for line in lines if line]
+    header = lines.pop(0)
+    if sort:
+        lines = lines.sort()
+    lines.insert(0, header)
     
     # Format lines for latex
     
@@ -30,7 +34,7 @@ def texorate(infile, fontsize='tiny'):
     table += r'\begin{center}'
     table += '\n'
     table += r'\begin{tabular}{ |'
-    for i in range(len(lines[0].split('\t'))):
+    for i in range(len(header[0].split('\t'))):
         table += 'c |'
     table += '} \hline\n'
     
