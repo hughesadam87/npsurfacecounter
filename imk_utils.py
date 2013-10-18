@@ -31,7 +31,7 @@ def texorate(infile, fontsize='tiny', sort=True):
     table += '\n'
 
     #Table header {c | c  etc...}
-    table += r'\begin{center}'
+    table += r'\begin{adjustwidth}{-2cm}{}'
     table += '\n'
     table += r'\begin{tabular}{ |'
     for i in range(len(header[0].split('\t'))):
@@ -46,9 +46,8 @@ def texorate(infile, fontsize='tiny', sort=True):
         table += line.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')          
         table += '\\\\ \hline\n'
                
-    table += '\end{tabular}\n\end{center}\n}'    
+    table += '\end{tabular}\n\end{adjustwidth}\n}'    
     table += '\n\n%\end{document}'
-
     return table
 
 def logmkdir(fullpath):
