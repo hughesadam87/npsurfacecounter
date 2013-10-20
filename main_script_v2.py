@@ -236,8 +236,9 @@ def main(indir, outdir, all_parms, compact_results = True):
         textable = texorate(light_summary_filename)
         with open( op.join(outdir,'summarytable.tex'), 'w') as o:
             o.write(textable)    
-    except (Exception, LogExit):
+    except (Exception, LogExit) as exc:
         logger.critical('Texorate FAILED: %s' % light_summary_filename)
+        print exc #Why aint trace working?  Cuz of how i'm catching these?
         
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']

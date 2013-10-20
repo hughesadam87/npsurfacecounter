@@ -19,7 +19,7 @@ def texorate(infile, fontsize='tiny', sort=True):
     lines = [line for line in lines if line]
     header = lines.pop(0)
     if sort:
-        lines = lines.sort()
+        lines.sort()
     lines.insert(0, header)
     
     # Format lines for latex
@@ -31,7 +31,7 @@ def texorate(infile, fontsize='tiny', sort=True):
     table += '\n'
 
     #Table header {c | c  etc...}
-    table += r'\begin{adjustwidth}{-2cm}{}'
+    table += r'\begin{adjustwidth}{-1cm}{}'
     table += '\n'
     table += r'\begin{tabular}{ |'
     for i in range(len(header[0].split('\t'))):
