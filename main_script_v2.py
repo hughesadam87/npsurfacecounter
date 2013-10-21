@@ -286,8 +286,12 @@ if __name__ == '__main__':
  
     ### Walk subdirectories
     (rootpath, rootdirs, rootfiles)= walker.next()
-    for folder in rootdirs:    
-            
+    # Error if directories are empty
+    if not rootdirs: 
+        logger.error("VALID DIRECTORY STURCTURE MUST BE: RUN --> MAG --> IMAGES")
+
+    for folder in rootdirs:                
+        
         indir = op.join(rootpath, folder)
         outdir = op.join(outroot, folder)
         
