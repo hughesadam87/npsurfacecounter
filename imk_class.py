@@ -1620,14 +1620,14 @@ class ImageDestroyer(object):
         elif style.lower() == 'lite':
             outparms=(
                       ('Image', self.shortname),                
-                      ('AuNPS', '%.2e' % self.np_total_corrected),                      
+                      ('NPS', '%.2e' % self.np_total_corrected),                      
 #                      ('anal_part_error',r2(self.particle_fitting_error)),                      
 
                       # Particle equivalents; no noise
-                      ('singles_eqv', r2(100.0 * float(self.single_counts) / self._np_total_equiv_nonoise)),
-                      ('doubles_eqv', r2(100.0 * float(self.double_particle_equiv) / self._np_total_equiv_nonoise)),
-                      ('flats_eqv', r2(100.0 * float(self.flat_particle_equiv) / self._np_total_equiv_nonoise)),
-                      ('super_eqv', r2(100.0 * float(self.super_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('single_eqvs', r2(100.0 * float(self.single_counts) / self._np_total_equiv_nonoise)),
+                      ('double_eqvs', r2(100.0 * float(self.double_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('flat_eqvs', r2(100.0 * float(self.flat_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('super_eqvs', r2(100.0 * float(self.super_particle_equiv) / self._np_total_equiv_nonoise)),
                       ('bw_nonoise(%)',r2(self.noiseless_bw_coverage))                      
                     )
             
@@ -1638,9 +1638,9 @@ class ImageDestroyer(object):
                       ('BSA', '%.2e' % self.bsa_total),
 
                       # Actual particle counts; no noise
-                      ('singles_true',r2(100.0* float(self.single_counts) / self._np_total_actual_nonoise)),
-                      ('doubles_true' ,r2(100.0* float(self.double_particle_actual) / self._np_total_actual_nonoise)),               
-                      ('flats_true',r2(100.0* float(self.flat_particle_actual) / self._np_total_actual_nonoise)),
+                      ('single_true',r2(100.0* float(self.single_counts) / self._np_total_actual_nonoise)),
+                      ('double_true' ,r2(100.0* float(self.double_particle_actual) / self._np_total_actual_nonoise)),               
+                      ('flat_true',r2(100.0* float(self.flat_particle_actual) / self._np_total_actual_nonoise)),
                       ('super_true',r2(100.0* float(self.super_particle_actual) / self._np_total_actual_nonoise)),
                       ('corr_cov(%)',r2(self.mean_corrected_coverage))                                            
                       
