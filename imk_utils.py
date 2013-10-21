@@ -6,6 +6,50 @@ import os.path as op
 import logging
 logger = logging.getLogger(__name__)
 
+def texorate(infile, fontsize='tiny', sort=True):
+    ''' Takes tab-delmited summary file; return latex table.  
+        FIRST LINE USED AS HEADER.
+        
+        Note: '\t' is baked in! (see .split('\t')  '''
+        
+    lines = open(infile, 'r').readlines()
+    
+    # Strip newlines, remove blank lines
+    lines = [line.strip() for line in lines if line]
+    lines = [line for line in lines if line]
+    header = lines.pop(0)
+    if sort:
+        lines.sort()
+    lines.insert(0, header)
+    
+    # Format lines for latex
+    
+    table = '%\documentclass{article}\n'
+    table += r'%\begin{document}'
+    table += '\n\n'    
+    table += r'{\%s' % fontsize
+    table += '\n'
+
+    #Table header {c | c  etc...}
+    table += r'\begin{adjustwidth}{-1cm}{}'
+    table += '\n'
+    table += r'\begin{tabular}{ |'
+    for i in range(len(header.split('\t'))):
+        table += 'c |'
+    table += '} \hline\n'
+    
+    for idx, line in enumerate(lines):
+        if idx == 0:
+            # Bool text top row
+            line = '\t'.join([r'{ \bf %s }' % word for word in line.split('\t')])
+
+        table += line.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')          
+        table += '\\\\ \hline\n'
+               
+    table += '\end{tabular}\n\end{adjustwidth}\n}'    
+    table += '\n\n%\end{document}'
+    return table
+
 def logmkdir(fullpath):
     ''' Makes directory path/folder, and logs.'''
     logger.info('Making directory: "%s"' % fullpath)
@@ -62,7 +106,7 @@ def sort_summary(summary_file, delim='\t'):
 
     else:
         logger.info('Sorting successful, outputting summary.')
-        f = logwritefile(summary_file, 'w')
+        f = logwritefile(summary_file)
         f.write(delim.join(header)+'\n\n')
         for i, line in enumerate(lines):
             ### Add a row divider between fibers
@@ -193,8 +237,7 @@ def rundict_foldersbyrun(indir):
     warnings='\t'.join(warnings)
     return filedict, warnings    
 
-                
-        
+                        
         #mag=d  #Value for magnification is in filename
         #try:
             #mag=int(mag)  #Raw magnification
@@ -228,6 +271,7 @@ def add_keylist(indic, key, val):
         indic[key]=[val]
     return indic    
 
+
 def test_suite_lowcoverage(imbuster, indic=None):
     '''Test developed on 4/8/13 to output various quanties of interest in
        trying to assess accuracy in low coverage fibers.  Probes quantitie like
@@ -235,7 +279,8 @@ def test_suite_lowcoverage(imbuster, indic=None):
        area of particles in the distribution.
        
        indic= Dictinoary to accumulate results over several runs.'''
-    if not indic: indic={}
+    if not indic: 
+        indic={}
     add_keylist(indic, 'Image', imbuster.shortname)
     xmin,xmax=imbuster.fit_min_max
     xmean=imbuster.fit_mean

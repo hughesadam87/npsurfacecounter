@@ -7,7 +7,7 @@ from config import from_file, to_dic #From pyrecords
 
 import logging
 logger = logging.getLogger(__name__)
-from logger import logclass, configure_logger
+from logger import logclass, configure_logger, LogExit
 
 ###Local module imports
 from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
@@ -15,14 +15,14 @@ from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, mak
 from imk_class import ImageDestroyer
 from man_adjust import manual_adjustments
 from scipy import integrate
-from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile, logmkdir
+from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile,\
+     logmkdir, texorate
 
 ## Histogram plot parameters
 from histogram_params import size_hists, grey_hissy, circ_hissy
 
-OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive
+OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive 
     
-
 def main(indir, outdir, all_parms, compact_results = True):   
     ''' Script to take a batch of SEM images and perform customized imagej and 
     python-based analysis.  Mostly wraps imk_class.py.
@@ -64,10 +64,12 @@ def main(indir, outdir, all_parms, compact_results = True):
     ### Perpare run-summary files ### (used in sorting at end of script, so don't remove yet)
     summary_filename = op.join(outdir, 'full_summary.xls')
     light_summary_filename = op.join(outdir, 'light_summary.xls')
-    coverage_summary = op.join(outdir+'detailed_summary.xls')
+    coverage_summary = op.join(outdir, 'detailed_summary.xls')
+    light2_summary_filename = op.join(outdir, 'light_summary_part2.xls')
     
     full_summary = logwritefile(summary_filename)
     light_summary = logwritefile(light_summary_filename)
+    light_summary_part2 = logwritefile(light2_summary_filename)
     cov_summ = logwritefile(coverage_summary)
     
     ### OUTPUT FOR LOW COVERAGE TESTING ON 4/8/13
@@ -107,9 +109,15 @@ def main(indir, outdir, all_parms, compact_results = True):
             imbuster.make_imjmacro()
             imbuster.run_macro()
             imbuster.initialize_count_parameters() #Store results in dataframe objects
+            logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
-            imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+            try:
+                imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: first hist and bestfit ('
+                   'THIS SHOULD NOT FAIL):\n%s' %(infile_shortname, e))
+                continue                
               
             #########################
             ## Particle sizing ######
@@ -130,8 +138,14 @@ def main(indir, outdir, all_parms, compact_results = True):
                                                                                  
             ### ADVANCED COVERAGE ANALYSIS       
             logger.info('Running coverage analysis')
-            imbuster.coverage_analysis_advanced(flat_high=float(size_parms['flat_high']), single_low=size_parms['sing_low'],
+            try:
+                imbuster.coverage_analysis_advanced(flat_high=float(size_parms['flat_high']), single_low=size_parms['sing_low'],
                                                     single_high=size_parms['sing_high'], super_adj_style='hemisphere', super_fill_in_cracks=False)
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: coverage analysis:\n%s' %(infile_shortname, e))
+                continue
+                                                
+                
             logger.info('Coverage analysis completed')
 
 
@@ -183,9 +197,9 @@ def main(indir, outdir, all_parms, compact_results = True):
                                     histsize['color']='red'
                             imbuster.super_histogram(htype, shadeattr=None, colorattr=None, lineattr=att, mapx=None, \
                                                  special_outpath=hdir, **histsize)
-            except Exception as e:
-                logger.critical('Histogram analysis failed.  Returned error:\n%s' % e)
-                                    
+            except (Exception, LogExit) as e:
+                logger.critical('%s FAILURE: Histogram analysis:\n%s' %(infile_shortname, e))
+                continue                
             ### April 4/8/13 Coverage tests
      #       logger.warn('Running adhoc method "test_suite_lowcoverage" from 4/8 testing.')
      #       testdic = test_suite_lowcoverage(imbuster, testdic)            
@@ -197,16 +211,19 @@ def main(indir, outdir, all_parms, compact_results = True):
             if filecount == 0:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='full') 
                 lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite')     
+                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite_part_2')
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='detailed')              
   
             else:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='full')
-                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')                       
+                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')        
+                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='lite_part_2')                
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='detailed')     
 
                 
             full_summary.write(sum_out)
             light_summary.write(lite_out)
+            light_summary_part2.write(lite_out_2)            
             cov_summ.write(cov_out)
             
             filecount+=1
@@ -214,22 +231,35 @@ def main(indir, outdir, all_parms, compact_results = True):
             
     ### April 4/8/13 Coverage tests            
 #    output_testsuite(testdic, apriltest)
-                    
-            
+                                
     ### Close files ###
-    full_summary.close() ;  light_summary.close() ; cov_summ.close() 
+    full_summary.close() ;  light_summary.close() ; cov_summ.close() ; light_summary_part2.close()
 
+    # Make .tex file for light summary
+    logger.info("Attempting texorate")
+    with open( op.join(outdir,'summarytable.tex'), 'w') as o:        
+        try:
+            for sumfile in [light_summary_filename, light2_summary_filename]:
+                textable = texorate(sumfile)
+                o.write(textable) 
+                o.write('\n\n')
+        except (Exception, LogExit) as exc:
+            logger.critical('Texorate FAILED: %s' % sumfile)
+            print exc #Why aint trace working?  Cuz of how i'm catching these?
+        
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']
     outsums=[summary_filename, light_summary_filename, coverage_summary]
-    
+
+    logger.info("Attempting sort summary.") #what's this doing?        
     for sumfile in outsums:
-        logger.info("Attempting sort summary.") #what's this doing?
-        sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
-        for ext in out_exts:
-            shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
-    #sort_summary(light_summary_filename, delim=OUT_DELIM)
-    #sort_summary(coverage_summary, delim=OUT_DELIM)
+        try:        
+            sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
+            for ext in out_exts:
+                shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
+
+        except (Exception, LogExit) as e:
+            logger.warn('%s sort summary failed!' % sumfile )
 
     
                 
@@ -237,13 +267,20 @@ def main(indir, outdir, all_parms, compact_results = True):
 ### MAIN PROGRAM ###
 if __name__ == '__main__':	
     
-    from analysis_parms import all_parms    
+    from analysis_parms import all_parms  
 
-    configure_logger(screen_level='debug', name=__name__)
-    
-    #Avoid ./ notation, it will confuse output scripts/macros
+    #Avoid relative paths, it will confuse output scripts/macros
     inroot = op.abspath('testdata')
     outroot = op.abspath('RunResults')
+    logfile=op.join(outroot, 'runlog.txt')
+    
+    #Haven't included anything special for debuging; need argparse/CLI
+    if '-v' in sys.argv:
+        configure_logger(screen_level='info', logfile=logfile, 
+                         name=__name__)
+    else:
+        configure_logger(screen_level='warning',logfile=logfile,
+                         name=__name__)
     
     walker=os.walk(inroot, topdown=True, onerror=None, followlinks=False)
  
@@ -256,6 +293,8 @@ if __name__ == '__main__':
         
         logger.info( 'Analyzing folder: "%s"' % folder )
         logger.debug( 'Analysis parms are: %s' % all_parms )
+
         main(indir, outdir, all_parms)
+
 
 

@@ -359,16 +359,122 @@ march_7={
 
 'F2_72600_low.tif':((104,255),(48, 60, 3024, 1924),(new_22)),   #Doublechek none
 'F2_72600_high.tif':((115,255),(48, 60, 3024, 1924),(new_22)),
-
 }
 
-#alldics=[sept_5_adj ,aug_13_adj , aug_6_adj ,oct_23_adj, special_renames, january_14 ]
-alldics=[january_14]#, aug_22, oct_23_adj, march_7] #name conflicts
+sept_4_UV50={
+'f1_30k_2_auto.tif':((None), (3, 0, 3069, 1452), (new_22)),
+'f1_30k_2.tif':((145,255), (3, 0, 3069, 1452), (new_22)),
+'f1_30k_auto.tif':((None), (None), (new_22)),
+'f1_30k.tif':((129,255), (None), (new_22)),
+}
+sept_5_UV50={    
+'f3_30k_full.tif':((159,255), (3, 6, 3069, 1968), (new_22)),
+'f2_30k_small.tif':((133,255), (63, 1332, 885, 642), (new_22)),
+}
+
+sept_11_UV50={ 
+'f1_30k_1_auto.tif':((None), (6, 0, 3066, 1989), (new_22)),
+'f1_30k_1.tif':((107,255), (6, 0, 3066, 1989), (new_22)),
+'f1_30k_2_auto.tif':((None), (0, 3, 3072, 1983), (new_22)),
+'f1_30k_2.tif':((115,255), (0, 3, 3072, 1983), (new_22)),
+'f1_b2_30000_auto.tif':((None), (0, 6, 3072, 1962), (new_22)),
+'f1_b2_30000.tif':((118,255), (0, 6, 3072, 1962), (new_22)),
+    }
+
+sept_17_UV50={
+'f3_30000_auto.tif':((None), (0, 3, 3072, 1986), (new_22)),
+'f3_30000.tif':((80,255), (0, 3, 3072, 1986), (new_22)),
+    }
+
+sept_19_UV50={
+'f1_30k.tif':((107,255), (3, 3, 3054, 1944), (new_22)),
+'f1_30k_auto.tif':((None), (3, 3, 3054, 1944), (new_22)),
+'f1_30k_2.tif':((97,255), (0, 0, 3066, 1995), (new_22)),
+'f1_30k_2_auto.tif':((None), (0, 0, 3066, 1995), (new_22)),
+}
+
+sept_26={
+    'f1_30000.tif': ((54,255), (12, 19, 3047, 1929), (new_22)),
+    'f1_30000_2.tif':((57,255), (12,12,3045,1911), (new_22)),
+    'f2_30000_2.tif':((64,255),(18,15,3054,1797),(new_22)),
+    'f2_30000_Cropoutbottom.tif':((67,255),(135,0,2919,900),(new_22)),
+    'f2_89380.tif':((58,255),(12,7,997,629),(new_22)), 
+    'f3_30000.tif':((39, 255),(15, 18, 3039, 1893),(new_22)), 
+    'f3_30000_2.tif':((46,255),(42,21,2994,1905),(new_22))    
+}
+Oct_1={
+    'f1_30000.tif': ((83,255), (0, 6, 3072, 1785), (new_22)), 
+    'f1_30000_auto.tif': ((None), (0, 6, 3072, 1785), (new_22)),
+    'f1_30000_2.tif': ((79,255), (0, 3, 3066, 1968), (new_22)),
+    'f1_30000_2_auto.tif': ((None), (0, 3, 3066, 1968), (new_22)),
+    }
+
+Oct_3={
+    'f1_30000.tif': ((61,255), (3, 3, 3066, 1986), (new_22)), 
+    'f1_30000_auto.tif': ((None), (3, 3, 3066, 1986), (new_22)),
+    'f1_30000_2.tif': ((66,255), (0, 3, 3063, 2010), (new_22)),
+    'f1_30000_2_auto.tif': ((None), (0, 3, 3063, 2010), (new_22)),
+    'f2_30000.tif': ((86,255), (0, 0, 3072, 2010), (new_22)), 
+    'f2_30000_auto.tif': ((None), (0, 0, 3072, 2010), (new_22)),
+    'f2_30000_2.tif': ((65,255), (3, 0, 3063, 1983), (new_22)),
+    'f2_30000_2_auto.tif': ((None), (3, 0, 3063, 1983), (new_22)),    
+    }
+
+Oct_8={
+    'f1_30000.tif': ((63,255), (0, 0, 3072, 2067), (new_22)), 
+    'f1_30000_auto.tif': ((None), (0, 0, 3072, 2067), (new_22)), 
+    'f2_30000.tif': ((83,255), (0, 0, 3069, 1938), (new_22)), 
+    'f2_30000_auto.tif': ((None), (0, 0, 3069, 1938), (new_22)), 
+    'f3_30000.tif': ((93,255), (756, 0, 2316, 2304), (new_22)), 
+    'f3_30000_auto.tif': ((None), (756, 0, 2316, 2304), (new_22)),      
+    }
+
+#Oct_9={
+    # Adam, all these had low coverage; try to threshold yourself.
+#    }
+
+Oct_15={
+    'f1_30000.tif': ((114,255),(0, 6, 3072, 1959),(new_22)),
+    'f2_30000.tif': ((105,255),(0, 0, 3072, 1989),(new_22))
+    }
+
+Oct_16={
+    # Adam, I gave some try on these low coverage ones. 
+    # The brightness has almost normal distribution. So not sure if the thresholding works good or not.
+    'f1_30000.tif': ((84, 255),(1587, 219, 1485, 2004),(new_22)),
+    'f2_30000.tif': ((78, 255),(0, 0, 3072, 1986),(new_22))
+    }
+
+Oct_17={
+    # f2_3000_artifacts.tif is very shaky due to charging. Hence only can pick a very small slice to do threshold. 
+    # This may lead to inaccurate results. Similar with f3_3000_lessartifacts.tif.
+    'f1_30000.tif': ((68, 255),(1236, 186, 1836, 1815),(new_22)),
+    'f2_30000_artifacts.tif': ((76, 255),(6, 264, 3057, 282),(new_22)),
+    'f2_30000_lessartifacts.tif': ((77,255),(0, 636, 3072, 1170),(new_22))
+    }
+
+Oct_19={
+    'f1_53700.tif':((179, 255), (19, 29, 3053, 1924), (new_22)),
+    'f1_30000.tif':((142, 255), (9, 15, 3048, 1587), (new_22)),
+    'f2_30000_good_finally.tif':((174, 255), (12, 18, 3039, 1950), (new_22)),
+    'f3_30000_good_finally.tif':((167, 255), (4, 12, 3052, 1960), (new_22))    
+    }
+
+
+#DATE={
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':((, 255), (), (new_22))    
+    #}
+
+alldics=[Oct_19]#, aug_22, oct_23_adj, march_7] #name conflicts
+
+# Merge dictionaries; check for name conflicts  
 manual_adjustments={}
-### Make sure dictionaries don't have dupliate keys before merger ###
 allkeys=[]
 for dic in alldics:
-    manual_adjustments.update(dic)  #Merged dictionaries
+    manual_adjustments.update(dic)  #Merge dictionaries
     for key in dic.keys():
         if key not in allkeys:
             allkeys.append(key)
