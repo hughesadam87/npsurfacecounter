@@ -131,7 +131,7 @@ class ImageDestroyer(object):
         ###Protein coverage analysis stuff
         self.noisy_area=self.noise_particles=None
         self.single_particles=self.flat_particle_equiv = self.super_particle_equiv=None      
-        self.true_flat_count = self.true_super_count = None
+        self.flat_particle_actual = self.super_particle_actual = None
         self.bsa_from_singles = self.bsa_from_flats = self.bsa_from_supers = None
         self.bsa_parms_numbers= self.bsa_parms_attstyle=self.bsa_cov_style=None        
         self.bsa_countstyle='dual'
@@ -386,24 +386,20 @@ class ImageDestroyer(object):
     @property
     def mean_corrected_coverage(self):
         ''' Take bw coverage MINUS NOISE and scales it if user supplied a forced-threshloding change.
-            Performs the simple transformation A(d) --> A(d + e).
-            
-            Not a property because it's better to call from main script before all internal fit parameters
-            are changed when the scale_data_from_hist() method is called.'''
+            Performs the simple transformation A(d) --> A(d + e).'''
         
         if self.uncorrected_dmean:
             d = self.uncorrected_dmean
-            coverage=self.noiseless_bw_coverage
+            coverage = self.noiseless_bw_coverage
             
             if self.fit_mean:
-                dnew=self.fit_mean
+                dnew = self.fit_mean
             else:
-                dnew=self.xhismax
+                dnew = self.xhismax
                 
-            scale=self._area_correct(d, dnew)
-                     
+            scale = self._area_correct(d, dnew) 
             return self.noiseless_bw_coverage * scale
-            
+        
         else:
             return None
 
@@ -433,29 +429,38 @@ class ImageDestroyer(object):
         return roundint(float(nps) * self.total_sensing_area / self.sampled_area  ) 
 
     @property
-    def _np_total_includingnoise(self):
+    def _np_total_equiv_withnoise(self):
         '''Nanoparticle estimation BEFORE throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
         to full fiber. Only really useful for summary stuff.'''
         return self.noise_particles+ self.single_counts + self.flat_particle_equiv\
                  + self.double_particle_equiv+self.super_particle_equiv        
     
     @property
-    def _np_total_nonoise(self):
+    def _np_total_equiv_nonoise(self):
         '''Nanoparticle estimation AFTER throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
-        to full fiber. Only really useful for summary stuff.'''
-        return  self.single_counts + self.flat_particle_equiv \
-                 + self.double_particle_equiv+self.super_particle_equiv        
+        to full fiber. Only really useful for summary stuff.
+           - Float returned since these are almost always used in quotients in outputs.'''
+        return float( self.single_counts + self.flat_particle_equiv  
+                 + self.double_particle_equiv+self.super_particle_equiv )
 
 
     @property
-    def _np_total_noequiv_includingnoise(self):
+    def _np_total_actual_withnoise(self):
         '''Nanoparticle estimation BEFORE throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
         to full fiber. Only really useful for summary stuff.'''
-        return self.noise_particles+ self.single_counts + self.true_flat_count\
-                 + self.true_doubles + self.true_super_count 
+        return float( self.noise_particles + self.single_counts + self.flat_particle_actual 
+                 + self.double_particle_actual + self.super_particle_actual )
 
     @property
-    def true_doubles(self):
+    def _np_total_actual_nonoise(self):
+        '''Nanoparticle estimation BEFORE throwing out lower/noise estimate JUST FOR THE FIBER IMAGE, not scaled
+        to full fiber. Only really useful for summary stuff.'''
+        return float( self.single_counts + self.flat_particle_actual 
+                 + self.double_particle_actual + self.super_particle_actual )
+
+
+    @property
+    def double_particle_actual(self):
         if self.double_particle_equiv:
             return roundint(0.5 * self.double_particle_equiv)
 
@@ -464,7 +469,7 @@ class ImageDestroyer(object):
     def np_total_corrected(self):
         '''Nanoparticle estimation after throwing out lower/noise estimate, then decomposing aggregates.'''
         return roundint( 
-                   (self.total_sensing_area / self.sampled_area ) * self._np_total_nonoise   
+                   (self.total_sensing_area / self.sampled_area ) * self._np_total_equiv_nonoise   
                    )
     
     ### Actual imagej particle estimation, not equivalent breakdown.  Should be same as imj particle analysis- noise
@@ -474,8 +479,8 @@ class ImageDestroyer(object):
         super aggregates"'''
         return roundint(
                   (self.total_sensing_area / self.sampled_area ) * \
-                   (self.single_counts + self.true_flat_count + \
-                    self.true_super_count + self.true_doubles ) 
+                   (self.single_counts + self.flat_particle_actual + \
+                    self.super_particle_actual + self.double_particle_actual ) 
                         )
 
     @property
@@ -579,7 +584,7 @@ class ImageDestroyer(object):
 
     @property
     def particle_analysis_parms(self):
-        ''' Particle analysis full detail '''
+        ''' Particle analysis full detail '''        
         return(
             
         ('IMJ particles (no noise)', self.true_particles_total_nonoise),  
@@ -591,33 +596,38 @@ class ImageDestroyer(object):
         ('doubles_equiv', self.double_particle_equiv),
         ('mids_equiv',self.flat_particle_equiv),
         ('bigs_equiv',self.super_particle_equiv),     
-        ('doubles_actual', self.true_doubles),
-        ('mids_actual',self.true_flat_count),
-        ('bigs_actual', self.true_super_count),
-
+        ('doubles_actual', self.double_particle_actual),
+        ('mids_actual',self.flat_particle_actual),
+        ('bigs_actual', self.super_particle_actual),
 
         ### Relative np particle ratio (Yes these should be uncorrected.  Note uncorrected means including noise
         ### and not scaled to the entire fiber.
         
         # Equivalent ratios (WITHOUT NOISE) [THESE ARE PERHAPS MOST IMPORTANT IN DETERMINING CONTRIBUTIONS TO SPR]
-        ('(%)singles_ratio_equiv_nonoise',r2(100.0* (float(self.single_counts) / float(self._np_total_nonoise)))),
-        ('(%)doubles_ratio_equiv_nonoise' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_nonoise)))),               
-        ('(%)mids_ratio_equiv_nonoise',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_nonoise)))),
-        ('(%)bigs_ratio_equiv_nonoise',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_nonoise)))),        
+        ('(%)singles_ratio_equiv_nonoise',r2(100.0* (float(self.single_counts) / self._np_total_equiv_nonoise))),
+        ('(%)doubles_ratio_equiv_nonoise' ,r2(100.0* (float(self.double_particle_equiv) / self._np_total_equiv_nonoise))),               
+        ('(%)mids_ratio_equiv_nonoise',r2(100.0* (float(self.flat_particle_equiv) / self._np_total_equiv_nonoise))),
+        ('(%)bigs_ratio_equiv_nonoise',r2(100.0* (float(self.super_particle_equiv) / self._np_total_equiv_nonoise))),        
         
         # Equivalent ratios (WITH NOISE)
-        ('(%)noise_ratio_equiv_wnoise' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_includingnoise)))),
-        ('(%)singles_ratio_equiv_wnoise',r2(100.0* (float(self.single_counts) / float(self._np_total_includingnoise)))),
-        ('(%)doubles_ratio_equiv_wnoise' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_includingnoise)))),               
-        ('(%)mids_ratio_equiv_wnoise',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_includingnoise)))),
-        ('(%)bigs_ratio_equiv_wnoise',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_includingnoise)))),
+        ('(%)noise_ratio_equiv_wnoise' ,r2(100.0* (float(self.noise_particles) / self._np_total_equiv_withnoise))),
+        ('(%)singles_ratio_equiv_wnoise',r2(100.0* (float(self.single_counts) / self._np_total_equiv_withnoise))),
+        ('(%)doubles_ratio_equiv_wnoise' ,r2(100.0* (float(self.double_particle_equiv) / self._np_total_equiv_withnoise))),               
+        ('(%)mids_ratio_equiv_wnoise',r2(100.0* (float(self.flat_particle_equiv) / self._np_total_equiv_withnoise))),
+        ('(%)bigs_ratio_equiv_wnoise',r2(100.0* (float(self.super_particle_equiv) / self._np_total_equiv_withnoise))),
     
-        #True ratios (break flats/doubles/supers into equivalents)
-        ('(%)noise_ratio_actual_wnoise' ,r2(100.0* (float(self.noise_particles) / float(self._np_total_noequiv_includingnoise)))),
-        ('(%)singles_ratio_actual_wnoise',r2(100.0* (float(self.single_counts) / float(self._np_total_noequiv_includingnoise)))),
-        ('(%)doubles_ratio_actual_wnoise' ,r2(100.0* (float(self.true_doubles) / float(self._np_total_noequiv_includingnoise)))),               
-        ('(%)mids_ratio_actual_wnoise',r2(100.0* (float(self.true_flat_count) / float(self._np_total_noequiv_includingnoise)))),
-        ('(%)bigs_ratio_actual_wnoise',r2(100.0* (float(self.true_super_count) / float(self._np_total_noequiv_includingnoise))))
+        # True ratios (nothing broken into equivalents), no noise
+        ('(%)singles_ratio_actual_nonoise',r2(100.0* (float(self.single_counts) / self._np_total_actual_nonoise))),
+        ('(%)doubles_ratio_actual_nonoise' ,r2(100.0* (float(self.double_particle_actual) / self._np_total_actual_nonoise))),               
+        ('(%)mids_ratio_actual_nonoise',r2(100.0* (float(self.flat_particle_actual) / self._np_total_actual_nonoise))),
+        ('(%)bigs_ratio_actual_nonoise',r2(100.0* (float(self.super_particle_actual) / self._np_total_actual_nonoise))),    
+    
+        #True ratios, with noise
+        ('(%)noise_ratio_actual_wnoise' ,r2(100.0* (float(self.noise_particles) / self._np_total_actual_withnoise))),
+        ('(%)singles_ratio_actual_wnoise',r2(100.0* (float(self.single_counts) / self._np_total_actual_withnoise))),
+        ('(%)doubles_ratio_actual_wnoise' ,r2(100.0* (float(self.double_particle_actual) / self._np_total_actual_withnoise))),               
+        ('(%)mids_ratio_actual_wnoise',r2(100.0* (float(self.flat_particle_actual) / self._np_total_actual_withnoise))),
+        ('(%)bigs_ratio_actual_wnoise',r2(100.0* (float(self.super_particle_actual) / self._np_total_actual_withnoise)))
             
             )    
     
@@ -627,10 +637,10 @@ class ImageDestroyer(object):
         ''' Particle analysis light summary parameters'''
         return(('nanoparticles', self.np_total_corrected),   
                ('IMJ particles (no noise)', self.true_particles_total_nonoise), 
-               ('(%)singles_ratio_equiv_nonoise',r2(100.0* (float(self.single_counts) / float(self._np_total_nonoise)))),
-               ('(%)doubles_ratio_equiv_nonoise' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_nonoise)))),               
-               ('(%)mids_ratio_equiv_nonoise',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_nonoise)))),
-               ('(%)bigs_ratio_equiv_nonoise',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_nonoise))))
+               ('(%)singles_ratio_equiv_nonoise',r2(100.0* (float(self.single_counts) / float(self._np_total_equiv_nonoise)))),
+               ('(%)doubles_ratio_equiv_nonoise' ,r2(100.0* (float(self.double_particle_equiv) / float(self._np_total_equiv_nonoise)))),               
+               ('(%)mids_ratio_equiv_nonoise',r2(100.0* (float(self.flat_particle_equiv) / float(self._np_total_equiv_nonoise)))),
+               ('(%)bigs_ratio_equiv_nonoise',r2(100.0* (float(self.super_particle_equiv) / float(self._np_total_equiv_nonoise))))
                )
                
 
@@ -1115,7 +1125,7 @@ class ImageDestroyer(object):
         if flat_range:
             ### Extract mid-sized aggregates, get particle counts assuming aggregates of mean size 
             flats=self._quick_slice(flat_range, self.count_results[attstyle])
-            self.true_flat_count=len(flats)
+            self.flat_particle_actual=len(flats)
 
             ### WHY ROUND
             flats_count=flats.apply(lambda x: x/single_mean).sum()  
@@ -1128,7 +1138,7 @@ class ImageDestroyer(object):
             ### Large aggregates, bigger than flat_range start to max of data +1 to include                        
             super_range=(flat_range[1], max(self.count_results[attstyle]))
             supers=self._quick_slice(super_range, self.count_results[attstyle])
-            self.true_super_count=len(supers)
+            self.super_particle_actual=len(supers)
             ### Reduce big particles in many mean-sized particles
             if super_adj_style == None:
                 supers_count=supers.apply(lambda x: x/single_mean).sum()
@@ -1299,7 +1309,7 @@ class ImageDestroyer(object):
                        
         ### Extract mid-sized aggregates. 
         flats=self._quick_slice( (flat_range), dataset)
-        self.true_flat_count=len(flats)
+        self.flat_particle_actual=len(flats)
         flats_count=flats.apply(lambda x: x/single_mean).sum()
             
         ### Now I have the total number of particles that are assumed to be of size single_mean
@@ -1312,7 +1322,7 @@ class ImageDestroyer(object):
         ### Large aggregates, bigger than flat_range start to max of data +1 to include                        
         super_range=(flat_range[1], max(dataset))
         supers=self._quick_slice(super_range, dataset)
-        self.true_super_count=len(supers)
+        self.super_particle_actual=len(supers)
         
         # Reduce big particles into multiples of mean-sized particles        
         if super_adj_style == None:
@@ -1607,20 +1617,35 @@ class ImageDestroyer(object):
                 self.np_size_parms + self.protein_parms
 
         ### Essential parameters, coverage, nps, bsa, sizing
-        elif style.lower()=='lite':
-            outparms=(('Image', self.shortname),                
-                      ('bw_nonoise(%)',r2(self.noiseless_bw_coverage)),
+        elif style.lower() == 'lite':
+            outparms=(
+                      ('Image', self.shortname),                
+                      ('AuNPS', '%.2e' % self.np_total_corrected),                      
 #                      ('anal_part_error',r2(self.particle_fitting_error)),                      
-                      ('corr_cov(%)',r2(self.mean_corrected_coverage)),                      
-                      ('nps', self.np_total_corrected),
-#                      ('bsa', self.bsa_total),
 
-                      # THESE ARE SAME AS (%)foo_ratio_equiv_nonoise, but name is shortened
-                      ('singles(%)', r2(100.0 * (float(self.single_counts)) / float(self._np_total_nonoise))),
-                      ('doubles(%)', r2(100.0 * (float(self.double_particle_equiv)) / float(self._np_total_nonoise))),
-                      ('flats(%)', r2(100.0 * (float(self.flat_particle_equiv)) / float(self._np_total_nonoise))),
-                      ('super(%)', r2(100.0 * (float(self.super_particle_equiv)) / float(self._np_total_nonoise))),
+                      # Particle equivalents; no noise
+                      ('singles_eqv', r2(100.0 * float(self.single_counts) / self._np_total_equiv_nonoise)),
+                      ('doubles_eqv', r2(100.0 * float(self.double_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('flats_eqv', r2(100.0 * float(self.flat_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('super_eqv', r2(100.0 * float(self.super_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('bw_nonoise(%)',r2(self.noiseless_bw_coverage))                      
                     )
+            
+            # XXX: Total hack for texorate
+        elif style.lower() == 'lite_part_2':
+            outparms=(
+                      ('Image', self.shortname),                
+                      ('BSA', '%.2e' % self.bsa_total),
+
+                      # Actual particle counts; no noise
+                      ('singles_true',r2(100.0* float(self.single_counts) / self._np_total_actual_nonoise)),
+                      ('doubles_true' ,r2(100.0* float(self.double_particle_actual) / self._np_total_actual_nonoise)),               
+                      ('flats_true',r2(100.0* float(self.flat_particle_actual) / self._np_total_actual_nonoise)),
+                      ('super_true',r2(100.0* float(self.super_particle_actual) / self._np_total_actual_nonoise)),
+                      ('corr_cov(%)',r2(self.mean_corrected_coverage))                                            
+                      
+                    )
+            
             
             #XXX Add some additional parameters related to npsize estimate
            # outparms=outparms+self.np_size_parms

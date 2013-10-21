@@ -420,12 +420,61 @@ Oct_3={
     'f2_30000_2_auto.tif': ((None), (3, 0, 3063, 1983), (new_22)),    
     }
 
-alldics=[sept_26]#, aug_22, oct_23_adj, march_7] #name conflicts
+Oct_8={
+    'f1_30000.tif': ((63,255), (0, 0, 3072, 2067), (new_22)), 
+    'f1_30000_auto.tif': ((None), (0, 0, 3072, 2067), (new_22)), 
+    'f2_30000.tif': ((83,255), (0, 0, 3069, 1938), (new_22)), 
+    'f2_30000_auto.tif': ((None), (0, 0, 3069, 1938), (new_22)), 
+    'f3_30000.tif': ((93,255), (756, 0, 2316, 2304), (new_22)), 
+    'f3_30000_auto.tif': ((None), (756, 0, 2316, 2304), (new_22)),      
+    }
+
+#Oct_9={
+    # Adam, all these had low coverage; try to threshold yourself.
+#    }
+
+Oct_15={
+    'f1_30000.tif': ((114,255),(0, 6, 3072, 1959),(new_22)),
+    'f2_30000.tif': ((105,255),(0, 0, 3072, 1989),(new_22))
+    }
+
+Oct_16={
+    # Adam, I gave some try on these low coverage ones. 
+    # The brightness has almost normal distribution. So not sure if the thresholding works good or not.
+    'f1_30000.tif': ((84, 255),(1587, 219, 1485, 2004),(new_22)),
+    'f2_30000.tif': ((78, 255),(0, 0, 3072, 1986),(new_22))
+    }
+
+Oct_17={
+    # f2_3000_artifacts.tif is very shaky due to charging. Hence only can pick a very small slice to do threshold. 
+    # This may lead to inaccurate results. Similar with f3_3000_lessartifacts.tif.
+    'f1_30000.tif': ((68, 255),(1236, 186, 1836, 1815),(new_22)),
+    'f2_30000_artifacts.tif': ((76, 255),(6, 264, 3057, 282),(new_22)),
+    'f2_30000_lessartifacts.tif': ((77,255),(0, 636, 3072, 1170),(new_22))
+    }
+
+Oct_19={
+    'f1_53700.tif':((179, 255), (19, 29, 3053, 1924), (new_22)),
+    'f1_30000.tif':((142, 255), (9, 15, 3048, 1587), (new_22)),
+    'f2_30000_good_finally.tif':((174, 255), (12, 18, 3039, 1950), (new_22)),
+    'f3_30000_good_finally.tif':((167, 255), (4, 12, 3052, 1960), (new_22))    
+    }
+
+
+#DATE={
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':((, 255), (), (new_22))    
+    #}
+
+alldics=[Oct_19]#, aug_22, oct_23_adj, march_7] #name conflicts
+
+# Merge dictionaries; check for name conflicts  
 manual_adjustments={}
-### Make sure dictionaries don't have dupliate keys before merger ###
 allkeys=[]
 for dic in alldics:
-    manual_adjustments.update(dic)  #Merged dictionaries
+    manual_adjustments.update(dic)  #Merge dictionaries
     for key in dic.keys():
         if key not in allkeys:
             allkeys.append(key)

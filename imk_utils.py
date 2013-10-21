@@ -34,7 +34,7 @@ def texorate(infile, fontsize='tiny', sort=True):
     table += r'\begin{adjustwidth}{-1cm}{}'
     table += '\n'
     table += r'\begin{tabular}{ |'
-    for i in range(len(header[0].split('\t'))):
+    for i in range(len(header.split('\t'))):
         table += 'c |'
     table += '} \hline\n'
     

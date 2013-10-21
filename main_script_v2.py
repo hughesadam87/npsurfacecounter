@@ -65,9 +65,11 @@ def main(indir, outdir, all_parms, compact_results = True):
     summary_filename = op.join(outdir, 'full_summary.xls')
     light_summary_filename = op.join(outdir, 'light_summary.xls')
     coverage_summary = op.join(outdir, 'detailed_summary.xls')
+    light2_summary_filename = op.join(outdir, 'light_summary_part2.xls')
     
     full_summary = logwritefile(summary_filename)
     light_summary = logwritefile(light_summary_filename)
+    light_summary_part2 = logwritefile(light2_summary_filename)
     cov_summ = logwritefile(coverage_summary)
     
     ### OUTPUT FOR LOW COVERAGE TESTING ON 4/8/13
@@ -209,16 +211,19 @@ def main(indir, outdir, all_parms, compact_results = True):
             if filecount == 0:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='full') 
                 lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite')     
+                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite_part_2')
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='detailed')              
   
             else:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='full')
-                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')                       
+                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')        
+                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='lite_part_2')                
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='detailed')     
 
                 
             full_summary.write(sum_out)
             light_summary.write(lite_out)
+            light_summary_part2.write(lite_out_2)            
             cov_summ.write(cov_out)
             
             filecount+=1
@@ -228,17 +233,19 @@ def main(indir, outdir, all_parms, compact_results = True):
 #    output_testsuite(testdic, apriltest)
                                 
     ### Close files ###
-    full_summary.close() ;  light_summary.close() ; cov_summ.close() 
+    full_summary.close() ;  light_summary.close() ; cov_summ.close() ; light_summary_part2.close()
 
     # Make .tex file for light summary
     logger.info("Attempting texorate")
-    try:
-        textable = texorate(light_summary_filename)
-        with open( op.join(outdir,'summarytable.tex'), 'w') as o:
-            o.write(textable)    
-    except (Exception, LogExit) as exc:
-        logger.critical('Texorate FAILED: %s' % light_summary_filename)
-        print exc #Why aint trace working?  Cuz of how i'm catching these?
+    with open( op.join(outdir,'summarytable.tex'), 'w') as o:        
+        try:
+            for sumfile in [light_summary_filename, light2_summary_filename]:
+                textable = texorate(sumfile)
+                o.write(textable) 
+                o.write('\n\n')
+        except (Exception, LogExit) as exc:
+            logger.critical('Texorate FAILED: %s' % sumfile)
+            print exc #Why aint trace working?  Cuz of how i'm catching these?
         
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']
