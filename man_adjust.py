@@ -5,11 +5,12 @@
        Fiber1:(140,255),(1200,3000,400,4000),(30)
        Fiber2: (122,255), (None),(None)
        
-    Store builtin sizes here.
+    Store builtin sizes here.  All folder names MUST BE TRUE to the 
+    name of directory of datain
    
    '''
 
-#DATE={
+#DATE:{
     #'.tif':(( ,255), (), (new_22)),
     #'.tif':(( ,255), (), (new_22)),
     #'.tif':(( ,255), (), (new_22)),
@@ -25,8 +26,9 @@ pella_50 = 48.6 #nm
 new_22 = 22.0 #nm
 new_18 = 18.0 #nm
 
+manual_adjustments = {}
 
-aug_13_12 = {
+manual_adjustments['aug_13_12'] = {
     'f1_b1_15k21_low.tif':((143, 255),(1, 0, 1023, 628),(old_30)),
     'f1_b1_15k21_high.tif':((147, 255),(1, 0, 1023, 628),(old_30)),
 
@@ -81,7 +83,7 @@ aug_13_12 = {
 
 
 ### Note: All of these are low res images and were performed by Annie.
-aug_6_12 = {
+manual_adjustments['aug_6_12'] = {
     '8_b1_f2_100k2_low.tif':((138 ,255), (23, 13, 998, 585),(old_30)),	
     '8_b1_f2_100k2_high.tif':((164 ,255), (23, 13, 998, 586),(old_30)),	
     '8_b1_f2_80k2_low.tif':((116 ,255), (14, 80, 996, 516),(old_30)),	
@@ -130,7 +132,7 @@ aug_6_12 = {
 
 
 #Careful, this has some odd/mixed up filenames.  Fix these on ones that you intend to use.
-aug_22_12 = {
+manual_adjustments['aug_22_12'] = {
     '50k_highres_scan6_int4_low.tif':((101,255),(3,3,3063,1971),(old_30)), #f1
     '50k_highres_scan6_int4_high.tif':((120,255),(3,3,3063,1971),(old_30)), #f1
     '30k_low.tif':((100,255),(3,60,3063,2142),(old_30)), #f2
@@ -139,7 +141,7 @@ aug_22_12 = {
     '50k_low_res_7_11_low.tif':((105,255),(0,0,1023,738),(old_30)), #f3
     } 
 
-sept_5_12 = {
+manual_adjustments['sept_5_12'] = {
     ######F1
     #'f1_5000.tif':( (163, 255),(1533, 9, 1422, 1104),(old_30)),   #No aggregates in crop
     'f1_5000.tif':( (163, 255),(1242, 9, 1713, 1053),(old_30)),   #Huge aggregate in crop
@@ -209,7 +211,7 @@ sept_5_12 = {
 
 
 ### Performed by Annie
-oct_23_12 = {
+manual_adjustments['oct_23_12'] = {
     'fiber1_50000_low.tif':((97, 255),(None),(pella_50)),
     'fiber1_50000_high.tif':((117, 255),(None),(pella_50)),
     'fiber1_30000_low.tif':((103, 255),(None),(pella_50)),
@@ -247,17 +249,17 @@ oct_23_12 = {
 
 
 ### If I get lazy and want to rename a file on the fly to mix between runs, I just put it here.
-special_renames={ #IS THIS FROM OCT 23? TED PELLA?
+manual_adjustments['special_renames'] = { #IS THIS FROM OCT 23? TED PELLA?
     'f3_100000_low.tif':((112 ,255), (3, 11, 1017, 591),()),	
     'f3_100000_high.tif':((122 ,255), (3, 11, 1017, 592))
     }
 
 ### RENAME THESE WITH UNDERSCORE OR THEY WONT SORT CORRECTLY!!!
-june_TEM={
+manual_adjustments['june_TEM']={
     '5C-1-60k-16b.tif':( (0, 18247),(None),()), '5C-2-60k-16b.tif':( (),(None) )
      }
 
-jan_14_13 = {
+manual_adjustments['jan_14_13'] = {
     'f1_10000_2_low.tif':((46,255),(6,6,3054,2052),(pella_50)),
     'f1_10000_2_high.tif':((50,255),(6,6,3054,2052),(pella_50)),
     'f1_30000_low.tif':((64,255),(12,12,3051,2049),(pella_50)),
@@ -279,7 +281,7 @@ jan_14_13 = {
     'f4_30000_2_high.tif':((44,255),(6,6,3057,2061),(pella_50)),
     }
 
-jan_28_13 = {
+manual_adjustments['jan_28_13'] = {
     'f1_1_28_30000_low.tif':((62,255),(1323,669,1743,1629),(new_18)), #bad image, huge crop
     'f1_1_28_30000_high.tif':((76,255),(1323,669,1743,1629),(new_18)),
     'f3_1_28_50000_low.tif':((98,255),(3,258,3063,1722),(new_18)),
@@ -293,7 +295,7 @@ jan_28_13 = {
     }
 
 
-jan_29_13 = {
+manual_adjustments['jan_29_13'] = {
     'f1_1_29_10000_low.tif':((81,255),(3,6,3063,984),(new_22)),
     'f1_1_29_10000_high.tif':((92,255),(3,6,3063,984),(new_22)),
     'f1_1_29_30000_low.tif':((77,255),(39,6,3027,2067),(new_22)),
@@ -312,7 +314,7 @@ jan_29_13 = {
     'f4_1_29_30000_high.tif':((45,255),(9,9,3054,1983),(new_22)),
     }
 
-feb_8_13 = {
+manual_adjustments['feb_8_13'] = {
     'f1_30000_low.tif':((44,255),(9,609,3057,1689),(new_22)),
     'f1_30000_high.tif':((54,255),(9,609,3057,1689),(new_22)),
     
@@ -329,7 +331,7 @@ feb_8_13 = {
     'f4_50000_high.tif':((44,255),(3,120,3063,2178),(new_22),)
     }
 
-feb_25_13 = {
+manual_adjustments['feb_25_13'] = {
     'f3_30000_low.tif':((74,255),(3,3,3063,2004),(new_22)),
     'f3_30000_high.tif':((89,255),(3,6,3060,2001),(new_22)),
     'f3_30000_2_low.tif':((90,255),(12,39,3054,1968),(new_22)),
@@ -342,12 +344,12 @@ feb_25_13 = {
     'f4_30000_4_high.tif':((79,255),(3,3,3063,2007),(new_22)),
      }
 
-feb_26_13 = {
+manual_adjustments['feb_26_13'] = {
     'f1_30000_2_low.tif':((120,255),(3,6,3060,2001),(new_22)),
     'f1_30000_2_high.tif':((135,255),(3,6,3060,2001),(new_22),)
     }
 
-march_7_13 = {
+manual_adjustments['march_7_13'] = {
     'F1_30000_low.tif':((106,255),(20, 40, 3016, 1920),(new_22)),   #With large aggregate
     'F1_30000_high.tif':((119,255),(48,44,1996,1856),(new_22)),   #Double check
     
@@ -370,19 +372,19 @@ march_7_13 = {
     'F2_72600_high.tif':((115,255),(48, 60, 3024, 1924),(new_22)),
     }
 
-sept_4_13_UV50= {
+manual_adjustments['sept_4_13_UV50'] = {
     'f1_30k_2_auto.tif':((None), (3, 0, 3069, 1452), (new_22)),
     'f1_30k_2.tif':((145,255), (3, 0, 3069, 1452), (new_22)),
     'f1_30k_auto.tif':((None), (None), (new_22)),
     'f1_30k.tif':((129,255), (None), (new_22)),
     }
 
-sept_5_13_UV50= {    
+manual_adjustments['sept_5_13_UV50'] = {    
     'f3_30k_full.tif':((159,255), (3, 6, 3069, 1968), (new_22)),
     'f2_30k_small.tif':((133,255), (63, 1332, 885, 642), (new_22)),
     }
 
-sept_11_13_UV50= { 
+manual_adjustments['sept_11_13_UV50'] = { 
     'f1_30k_1_auto.tif':((None), (6, 0, 3066, 1989), (new_22)),
     'f1_30k_1.tif':((107,255), (6, 0, 3066, 1989), (new_22)),
     'f1_30k_2_auto.tif':((None), (0, 3, 3072, 1983), (new_22)),
@@ -391,19 +393,19 @@ sept_11_13_UV50= {
     'f1_b2_30000.tif':((118,255), (0, 6, 3072, 1962), (new_22)),
     }
 
-sept_17_13_UV50= {
+manual_adjustments['sept_17_13_UV50'] = {
     'f3_30000_auto.tif':((None), (0, 3, 3072, 1986), (new_22)),
     'f3_30000.tif':((80,255), (0, 3, 3072, 1986), (new_22)),
     }
 
-sept_19_13_UV50= {
+manual_adjustments['sept_19_13_UV50'] = {
     'f1_30k.tif':((107,255), (3, 3, 3054, 1944), (new_22)),
     'f1_30k_auto.tif':((None), (3, 3, 3054, 1944), (new_22)),
     'f1_30k_2.tif':((97,255), (0, 0, 3066, 1995), (new_22)),
     'f1_30k_2_auto.tif':((None), (0, 0, 3066, 1995), (new_22)),
     }
 
-sept_26_13 = {
+manual_adjustments['sept_26_13'] = {
     'f1_30000.tif': ((54,255), (12, 19, 3047, 1929), (new_22)),
     'f1_30000_2.tif':((57,255), (12,12,3045,1911), (new_22)),
     'f2_30000_2.tif':((64,255),(18,15,3054,1797),(new_22)),
@@ -413,14 +415,14 @@ sept_26_13 = {
     'f3_30000_2.tif':((46,255),(42,21,2994,1905),(new_22))    
     }
 
-oct_1_13 = {
+manual_adjustments['oct_1_13'] = {
     'f1_30000.tif': ((83,255), (0, 6, 3072, 1785), (new_22)), 
     'f1_30000_auto.tif': ((None), (0, 6, 3072, 1785), (new_22)),
     'f1_30000_2.tif': ((79,255), (0, 3, 3066, 1968), (new_22)),
     'f1_30000_2_auto.tif': ((None), (0, 3, 3066, 1968), (new_22)),
     }
 
-oct_3_13 = {
+manual_adjustments['oct_3_13'] = {
     'f1_30000.tif': ((61,255), (3, 3, 3066, 1986), (new_22)), 
     'f1_30000_auto.tif': ((None), (3, 3, 3066, 1986), (new_22)),
     'f1_30000_2.tif': ((66,255), (0, 3, 3063, 2010), (new_22)),
@@ -431,7 +433,7 @@ oct_3_13 = {
     'f2_30000_2_auto.tif': ((None), (3, 0, 3063, 1983), (new_22)),    
     }
 
-oct_8_13 = {
+manual_adjustments['oct_8_13'] = {
     'f1_30000.tif': ((63,255), (0, 0, 3072, 2067), (new_22)), 
     'f1_30000_auto.tif': ((None), (0, 0, 3072, 2067), (new_22)), 
     'f2_30000.tif': ((83,255), (0, 0, 3069, 1938), (new_22)), 
@@ -440,23 +442,23 @@ oct_8_13 = {
     'f3_30000_auto.tif': ((None), (756, 0, 2316, 2304), (new_22)),      
     }
 
-#Oct_9_13 ={
+#Oct_9_13 :{
     # Adam, all these had low coverage; try to threshold yourself.
 #    }
 
-oct_15_13 = {
+manual_adjustments['oct_15_13'] = {
     'f1_30000.tif': ((114,255),(0, 6, 3072, 1959),(new_22)),
     'f2_30000.tif': ((105,255),(0, 0, 3072, 1989),(new_22))
     }
 
-oct_16_13 = {
+manual_adjustments['oct_16_13'] = {
     # Adam, I gave some try on these low coverage ones. 
     # The brightness has almost normal distribution. So not sure if the thresholding works good or not.
     'f1_30000.tif': ((84, 255),(1587, 219, 1485, 2004),(new_22)),
     'f2_30000.tif': ((78, 255),(0, 0, 3072, 1986),(new_22))
     }
 
-oct_17_13 = {
+manual_adjustments['oct_17_13'] = {
     # f2_3000_artifacts.tif is very shaky due to charging. Hence only can pick a very small slice to do threshold. 
     # This may lead to inaccurate results. Similar with f3_3000_lessartifacts.tif.
     'f1_30000.tif': ((68, 255),(1236, 186, 1836, 1815),(new_22)),
@@ -464,29 +466,10 @@ oct_17_13 = {
     'f2_30000_lessartifacts.tif': ((77,255),(0, 636, 3072, 1170),(new_22))
     }
 
-oct_19_13 = {
+manual_adjustments['oct_19_13'] = {
     'f1_53700.tif':((179, 255), (19, 29, 3053, 1924), (new_22)),
     'f1_30000.tif':((142, 255), (9, 15, 3048, 1587), (new_22)),
     'f2_30000_good_finally.tif':((174, 255), (12, 18, 3039, 1950), (new_22)),
     'f3_30000_good_finally.tif':((167, 255), (4, 12, 3052, 1960), (new_22))    
     }
-
-
-alldics=[
-    aug_13_12, aug_6_12, aug_22_12, sept_5_12, oct_23_12, jan_14_13, jan_28_13,
-    jan_29_13, feb_8_13, feb_25_13, feb_26_13, march_7_13, sept_4_13_UV50, sept_5_13_UV50,
-    sept_11_13_UV50, sept_17_13_UV50, sept_19_13_UV50, sept_26_13, oct_1_13, oct_3_13,
-    oct_8_13, oct_15_13, oct_16_13, oct_17_13, oct_19_13    
-    ]
-
-# Merge dictionaries; check for name conflicts  
-manual_adjustments={}
-allkeys=[]
-for dic in alldics:
-    manual_adjustments.update(dic)  #Merge dictionaries
-    for key in dic.keys():
-        if key not in allkeys:
-            allkeys.append(key)
-        else:
-            raise KeyError('In man_adjust.py, duplicate filename %s found between runs.'%(key))
 

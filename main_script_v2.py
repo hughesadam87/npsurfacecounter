@@ -44,6 +44,7 @@ def main(indir, outdir, all_parms, compact_results = True):
         Walker needs refactored to alleviate this, or at least raise an error
         when this format is not used.'''
     
+    
     imj_parms, size_parms, run_parms = \
         all_parms['imj_parms'], all_parms['size_parms'], all_parms['run_parms']
     
@@ -82,12 +83,24 @@ def main(indir, outdir, all_parms, compact_results = True):
     parmsout.write('\n\nSize Parameters:\n')
     parmsout.write( ('\t').join((str(k)+'\t'+str(v) ) for k,v in size_parms.items()) )
     parmsout.close()
+
+    ### Check to see if folder is in manual_adjustments
+    if op.basename(indir) in manual_adjustments: 
+        adjust_dic = manual_adjustments[op.basename(indir)]
+        logger.info('Manual adjustments folder found for %s' % op.basename(indir))
+    else:        
+        logger.critical('Manual adjustments NOT FOUND FOR ENTIRE DIRECTORY "%s"'
+                        % op.basename(indir))    
+        adjust_dic = {}  #So a key error is raised below
+        
+        # Each file itself if not found will raise an additional warning
     
     ### Setup the subdirectories by magnification
     filecount=0
     for mag,(direc, infiles_full) in indict.items():
         rootpath=op.join(outdir, direc)
         logmkdir(rootpath) #Make subdirectory    
+        
 
     ### Iterate through file-by-file
         for infile in infiles_full:
@@ -95,8 +108,8 @@ def main(indir, outdir, all_parms, compact_results = True):
             outpath = op.join(rootpath, get_shortname(infile, cut_extension=True)) #Cut extension is here
             logmkdir(outpath)
             
-            try:
-                adjust, crop, npmean=manual_adjustments[infile_shortname]  #This is important          
+            try:                                
+                adjust, crop, npmean = adjust_dic[infile_shortname]          
             except KeyError:
                 adjust=None ; crop=None ; npmean=None  #adjust=None means manual adjustments used
                 logger.warn('Manual adjustment settings NOT FOUND for %s' % infile)
