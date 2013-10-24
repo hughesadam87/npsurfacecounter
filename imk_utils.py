@@ -23,12 +23,12 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
 
     # Only way I can find to concantate long string that has raw literals
     template = (r'\begin{figure}[h!]\centering' + '\n'
-       + '\subfigure[]{\includegraphics[width=12cm]{%s} }' + '\n' 
        + '%s' + '\n' #HYPERTARGET GOES HERE
+       + '\subfigure[]{\includegraphics[width=12cm]{%s} }' + '\n' 
        + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' + '\n' 
        + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' +  '\n'
       + '\label{%s}' +  '\n' 
-       + '\caption{%s}' +'\n' 
+       + '\caption*{%s}' +'\n' #caption* mean "Figure 1" is not printed
        + '\end{figure}' + '\n\n' )
 
     # Add document header (commented out)
@@ -51,18 +51,23 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
         sem_image, hist_path1, hist_path2 =\
            _hacksplit(sem_image), _hacksplit(hist_path1), _hacksplit(hist_path2)
         
+        if 'crop' in sem_image:
+            cropmessage = 'Image has been cropped.'
+        else:
+            cropmessage = 'Image has not been cropped.'
+        
         # Extract only folder name (ie path/to/f3_30000/) 
         imagename = op.split(op.dirname(hist_path1))[-1]
 
-        label = 'hist%s' % imagename.replace('_', '\_')
-        hypertarget = '\hypertarget{%s}{\;}' % label
+        hypertarget = '\hypertarget{%s}{\;}' % 'hist%s' % imagename.replace('_', '\_')
         
         caption = tex_string(
-            '{\hyperlink{%s}{\color{blue} %s}- The (possibly cropped) SEM image diameter (a) and histograms of (b) unaltered'
-            ' (c) SIZE-CORRECTED AuNPs.}' % (TABLETARGET, imagename)
+            r'{\hyperlink{%s}{\color{blue} \small \ttfamily %s}:  SEM image (a) and histograms of unaltered (b)'
+            ' and SIZE-CORRECTED (c) AuNP diameters. (%s)}' % (TABLETARGET, imagename, cropmessage)
             )
-        
-        out += template % (sem_image, hypertarget, hist_path1, hist_path2, label, caption)
+                                                                            
+        out += template % (hypertarget, sem_image, hist_path1, hist_path2, 
+                 ('semimg'+str(idx)), caption) #image label chosen arbitrarily
 
     out += '%\end{document}'
     return out  
