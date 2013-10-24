@@ -10,7 +10,7 @@
    
    '''
 
-#DATE:{
+#manual_adjustments[DATE] = {
     #'.tif':(( ,255), (), (new_22)),
     #'.tif':(( ,255), (), (new_22)),
     #'.tif':(( ,255), (), (new_22)),
@@ -227,7 +227,6 @@ manual_adjustments['oct_23_12'] = {
     'fiber2_10000_high.tif':((134, 225),(1056, 3, 2010, 2295),(pella_50)),
     
     ### Performed by Zhaowen
-    'fiber3_10000_scan6_line113.tif':((124, 255),(None),(pella_50)),  #No low and high
     'fiber3_30000_scan6_line113_low.tif':((116, 255),(6, 999, 3048, 1302),(pella_50)),
     'fiber3_30000_scan6_line113_high.tif':((135, 255),(6, 999, 3048, 1302),(pella_50)),
     'fiber3_50000_low.tif':((136, 255),(None),(pella_50)),
@@ -443,7 +442,7 @@ manual_adjustments['oct_8_13'] = {
     }
 
 #Oct_9_13 :{
-    # Adam, all these had low coverage; try to threshold yourself.
+# Adam, all these had low coverage; try to threshold yourself.
 #    }
 
 manual_adjustments['oct_15_13'] = {
@@ -466,10 +465,20 @@ manual_adjustments['oct_17_13'] = {
     'f2_30000_lessartifacts.tif': ((77,255),(0, 636, 3072, 1170),(new_22))
     }
 
-manual_adjustments['oct_19_13'] = {
+manual_adjustments['oct_19_13_abridged'] = { #There are several other images, but they need cropped
     'f1_53700.tif':((179, 255), (19, 29, 3053, 1924), (new_22)),
     'f1_30000.tif':((142, 255), (9, 15, 3048, 1587), (new_22)),
     'f2_30000_good_finally.tif':((174, 255), (12, 18, 3039, 1950), (new_22)),
     'f3_30000_good_finally.tif':((167, 255), (4, 12, 3052, 1960), (new_22))    
     }
 
+manual_adjustments['oct_22_13'] = {
+    'f1_80000.tif':((164, 255), (None), (new_22)), 
+    'f3_30000_3.tif':((120,255), (9, 14, 3063, 1570), (new_22)),
+    'f3_30000_2.tif':((107 ,255), (6, 15, 3066, 1896), (new_22)),
+    'f3_30000.tif':((121 ,255), (7, 14, 3065, 1898), (new_22)),
+    'f1_30000.tif':((160, 255), (4, 14, 3068, 768), (new_22)),   
+    'f1_30000_2.tif':((72 ,255), (1100, 24, 1964, 1428), (new_22)),
+    'f1_30000_3_crop1.tif':((88 ,255), (291, 12, 2772, 519), (new_22)),
+    'f1_30000_3_crop2.tif':((88 ,255), (1047, 687, 2010, 1602), (new_22))
+    }
