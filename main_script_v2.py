@@ -1,5 +1,7 @@
 import os, sys, shutil
 import os.path as op
+from scipy import integrate
+
 
 ###Pyrecords imports
 from imjfields import ij_manager, results_manager, grey_manager
@@ -10,13 +12,12 @@ logger = logging.getLogger(__name__)
 from logger import logclass, configure_logger, LogExit
 
 ###Local module imports
-from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
-     sort_summary, rundict_foldersbyrun
 from imk_class import ImageDestroyer
 from man_adjust import manual_adjustments
-from scipy import integrate
-from imk_utils import test_suite_lowcoverage, output_testsuite, logwritefile,\
-     logmkdir, texorate
+from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
+     sort_summary, rundict_foldersbyrun, to_texfigure, to_textable, test_suite_lowcoverage, \
+     output_testsuite, logwritefile, logmkdir, tif_to_png
+
 
 ## Histogram plot parameters
 from histogram_params import size_hists, grey_hissy, circ_hissy
@@ -44,8 +45,11 @@ def main(indir, outdir, all_parms, compact_results = True):
         Walker needs refactored to alleviate this, or at least raise an error
         when this format is not used.'''
     
+    
     imj_parms, size_parms, run_parms = \
         all_parms['imj_parms'], all_parms['size_parms'], all_parms['run_parms']
+    
+    tex_images = {} #10/23 dictionary to store histograms for putting into reports
     
     ### Store internal file parameters in dictionary keyed by magnifications
     logger.info('Attempting to read folders arranged by magnification.')
@@ -82,21 +86,34 @@ def main(indir, outdir, all_parms, compact_results = True):
     parmsout.write('\n\nSize Parameters:\n')
     parmsout.write( ('\t').join((str(k)+'\t'+str(v) ) for k,v in size_parms.items()) )
     parmsout.close()
+
+    ### Check to see if folder is in manual_adjustments
+    if op.basename(indir) in manual_adjustments: 
+        adjust_dic = manual_adjustments[op.basename(indir)]
+        logger.info('Manual adjustments folder found for %s' % op.basename(indir))
+    else:        
+        logger.critical('Manual adjustments NOT FOUND FOR ENTIRE DIRECTORY "%s"'
+                        % op.basename(indir))    
+        adjust_dic = {}  #So a key error is raised below
+        
+        # Each file itself if not found will raise an additional warning
     
     ### Setup the subdirectories by magnification
     filecount=0
     for mag,(direc, infiles_full) in indict.items():
         rootpath=op.join(outdir, direc)
         logmkdir(rootpath) #Make subdirectory    
+        
 
     ### Iterate through file-by-file
         for infile in infiles_full:
             infile_shortname = get_shortname(infile, cut_extension=False) 
             outpath = op.join(rootpath, get_shortname(infile, cut_extension=True)) #Cut extension is here
             logmkdir(outpath)
+            tex_images[infile_shortname] = [ (''), (''), ('')]
             
-            try:
-                adjust, crop, npmean=manual_adjustments[infile_shortname]  #This is important          
+            try:                                
+                adjust, crop, npmean = adjust_dic[infile_shortname]          
             except KeyError:
                 adjust=None ; crop=None ; npmean=None  #adjust=None means manual adjustments used
                 logger.warn('Manual adjustment settings NOT FOUND for %s' % infile)
@@ -104,20 +121,30 @@ def main(indir, outdir, all_parms, compact_results = True):
             ### Instantiate the ImageJ analysis class ###
             imbuster=ImageDestroyer(infile, mag, outpath, adjust=adjust, crop=crop, particle_parms=imj_parms)    
             logger.info('Analyzing image %s' % infile)
-             
+                         
             #### Make and run imagej macro        
             imbuster.make_imjmacro()
             imbuster.run_macro()
             imbuster.initialize_count_parameters() #Store results in dataframe objects
             logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
             
+            # Make a png version of image or cropped image
+            croppedfile = op.join(outpath, op.splitext(infile_shortname)[0]+'_cropped.tif')
+            if op.exists(croppedfile):
+                tex_images[infile_shortname][0] = tif_to_png(croppedfile, outpath)
+            else:
+                tex_images[infile_shortname][0] = tif_to_png(infile, outpath)
+
+            
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
             try:
-                imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+                histpath=imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+                tex_images[infile_shortname][1] = histpath.split(outroot)[-1] #Add histogram for report
             except (Exception, LogExit) as e:
                 logger.critical('%s FAILURE: first hist and bestfit ('
                    'THIS SHOULD NOT FAIL):\n%s' %(infile_shortname, e))
-                continue                
+                continue        
+            
               
             #########################
             ## Particle sizing ######
@@ -129,9 +156,11 @@ def main(indir, outdir, all_parms, compact_results = True):
                     logger.info('NPSIZE MISSING FOR INFILE %s.  Cannot'
                       ' perform size analysis' % infile)
                 else:          
-                    npmean=float(npmean)
+                    npmean = float(npmean)
                     ### Reset the data based on the scaled_data_from_hist
-                    imbuster.scale_data_from_hist(npmean, special_outname = 'D_scaled')
+                    histpath=imbuster.scale_data_from_hist(npmean, special_outname = 'D_scaled')
+                    tex_images[infile_shortname][2] = histpath.split(outroot)[-1] #Add histogram for report
+
                     logger.info('NPMEAN is: %s.  Data has been rescaled' % npmean)
 
 #            imbuster.hist_and_bestfit(attstyle='area', special_outname='area_dist')      
@@ -236,11 +265,11 @@ def main(indir, outdir, all_parms, compact_results = True):
     full_summary.close() ;  light_summary.close() ; cov_summ.close() ; light_summary_part2.close()
 
     # Make .tex file for light summary
-    logger.info("Attempting texorate")
+    logger.info("Attempting to_textable")
     with open( op.join(outdir,'summarytable.tex'), 'w') as o:        
         try:
             for sumfile in [light_summary_filename, light2_summary_filename]:
-                textable = texorate(sumfile)
+                textable = to_textable(sumfile)
                 o.write(textable) 
                 o.write('\n\n')
         except (Exception, LogExit) as exc:
@@ -250,6 +279,16 @@ def main(indir, outdir, all_parms, compact_results = True):
     ### Sort output, specify alternative file extensions
     out_exts=['.txt']
     outsums=[summary_filename, light_summary_filename, coverage_summary]
+    
+    logger.info("Attempting to texify-histograms.") #what's this doing?        
+    with open(op.join(outdir, 'histsummary.tex'), 'w') as o:
+        try:
+            o.write(to_texfigure(tex_images))
+            o.close()
+        except (Exception, LogExit) as exc:
+            logger.critical('Texfigure FAILED: %s' % sumfile)
+            print exc #Why aint trace working?  Cuz of how i'm catching these?
+        
 
     logger.info("Attempting sort summary.") #what's this doing?        
     for sumfile in outsums:
@@ -285,7 +324,7 @@ if __name__ == '__main__':
     walker=os.walk(inroot, topdown=True, onerror=None, followlinks=False)
  
     ### Walk subdirectories
-    (rootpath, rootdirs, rootfiles)= walker.next()
+    (rootpath, rootdirs, rootfiles) = walker.next()
     # Error if directories are empty
     if not rootdirs: 
         logger.error("VALID DIRECTORY STURCTURE MUST BE: RUN --> MAG --> IMAGES")

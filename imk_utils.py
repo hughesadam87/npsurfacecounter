@@ -6,7 +6,70 @@ import os.path as op
 import logging
 logger = logging.getLogger(__name__)
 
-def texorate(infile, fontsize='tiny', sort=True):
+# Name to link textable/texfigures through summary
+TABLETARGET = 'covtable' #Used in report commands, so don't change
+
+def tex_string(string):
+    ''' Reformat various characters to be latex compatible'''
+    return string.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')   
+
+def to_texfigure(histdic, fontsize='scriptsize', sort=True):
+    ''' Takes a dictionary of length 2 image paths IE:
+          { 'foo': ('path1', 'path2') }  
+        Thought it doens't matter, better if paths are relative 
+        so full directory tree can be copy pasted.
+
+        Writes a subfigure with relative figs path.'''
+
+    # Only way I can find to concantate long string that has raw literals
+    template = (r'\begin{figure}[h!]\centering' + '\n'
+       + '\subfigure[]{\includegraphics[width=12cm]{%s} }' + '\n' 
+       + '%s' + '\n' #HYPERTARGET GOES HERE
+       + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' + '\n' 
+       + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' +  '\n'
+      + '\label{%s}' +  '\n' 
+       + '\caption{%s}' +'\n' 
+       + '\end{figure}' + '\n\n' )
+
+    # Add document header (commented out)
+    out = '%\documentclass{article}\n'
+    out += r'%\begin{document}' + '\n'
+
+    keys = histdic.keys()
+    if sort:
+        keys.sort()
+
+    # Super hack to make relative path for report
+    def _hacksplit(path):
+        splitpath = [tier for tier in path.split('/') if tier]
+        splitpath = op.join(splitpath[(len(splitpath)-3)::])
+        return '/'.join(splitpath)
+
+    for idx, key in enumerate(keys):
+        # Paths of form /run/mag/imagename/D_distribuion
+        sem_image, hist_path1, hist_path2 = histdic[key]
+        sem_image, hist_path1, hist_path2 =\
+           _hacksplit(sem_image), _hacksplit(hist_path1), _hacksplit(hist_path2)
+        
+        # Extract only folder name (ie path/to/f3_30000/) 
+        imagename = op.split(op.dirname(hist_path1))[-1]
+
+        label = 'hist%s' % imagename.replace('_', '\_')
+        hypertarget = '\hypertarget{%s}{\;}' % label
+        
+        caption = tex_string(
+            '{\hyperlink{%s}{\color{blue} %s}- The (possibly cropped) SEM image diameter (a) and histograms of (b) unaltered'
+            ' (c) SIZE-CORRECTED AuNPs.}' % (TABLETARGET, imagename)
+            )
+        
+        out += template % (sem_image, hypertarget, hist_path1, hist_path2, label, caption)
+
+    out += '%\end{document}'
+    return out  
+
+
+
+def to_textable(infile, fontsize='tiny', sort=True):
     ''' Takes tab-delmited summary file; return latex table.  
         FIRST LINE USED AS HEADER.
         
@@ -31,8 +94,8 @@ def texorate(infile, fontsize='tiny', sort=True):
     table += '\n'
 
     #Table header {c | c  etc...}
-    table += r'\begin{adjustwidth}{-1cm}{}'
-    table += '\n'
+    table += r'\begin{adjustwidth}{-1cm}{}' + '\n'
+    table += '\hypertarget{%s}{\;}\n' % TABLETARGET #Hypertarget for histograms 
     table += r'\begin{tabular}{ |'
     for i in range(len(header.split('\t'))):
         table += 'c |'
@@ -43,8 +106,17 @@ def texorate(infile, fontsize='tiny', sort=True):
             # Bool text top row
             line = '\t'.join([r'{ \bf %s }' % word for word in line.split('\t')])
 
-        table += line.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')          
+        else:
+            # Overwrite imagename to have a hyperlink to plot
+            sline=line.split('\t')
+            firstword = '{\hyperlink{hist%s}{\color{blue}%s}}' % (op.splitext(sline[0])[0], sline[0])
+            sline[0] = firstword
+            line = '\t'.join(sline)
+        
+        
+        table += tex_string(line)          
         table += '\\\\ \hline\n'
+        
                
     table += '\end{tabular}\n\end{adjustwidth}\n}'    
     table += '\n\n%\end{document}'
@@ -59,6 +131,18 @@ def logwritefile(fullpath):
     ''' Open a file in 'w' mode; log that it has been opened. '''
     logger.info('Making writable outfile: "%s"' % fullpath)
     return open(fullpath, 'w')  #Note, user has to close
+
+def tif_to_png(imagepath, outdir):
+    ''' Convert tif image to png.  Calls to system convert so fairly hacked.
+       imagepath - where image is
+       outdir - path to outdirectory '''
+    filename, ext = op.splitext(imagepath)
+    pngpath = op.join(outdir, (get_shortname(filename, cut_extension=True) +'.png'))
+    if ext != '.tif':
+        raise AttributeError('_tif_to_png() expects image of type ".tif"')
+    os.system('convert -quiet %s %s' % (imagepath, pngpath))
+    return pngpath
+    
 
 def get_shortname(filepath, cut_extension=False):
     ''' Return basename of filepath, with or without extension'''

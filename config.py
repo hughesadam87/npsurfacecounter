@@ -7,7 +7,7 @@ import sys
 #################
 ### CHANGE ME ###
 #################
-selected = 'LABPC'
+selected = 'ADAMS_LAB_PC'
 
 # Set of possible computers to choose from.  LABPC2 is evelyn's main station next to adam's lab computer and
 # also desktop by printer.
@@ -18,7 +18,7 @@ if selected not in selections:
                 
      
 ### Path to pyrecords on each machine           
-pyrec_path = {'ADAMS_LAB_PC':'/home/glue/Dropbox/pyrecords', 
+pyrec_path = {'ADAMS_LAB_PC':'/media/backup/Dropbox/pyrecords', 
             'ADAMS_LAPTOP': '/home/hugadams/Dropbox/pyrecords', 
             'LABPC':'/home/reeves/Dropbox/pyrecords',
             'LAB_LAPTOP':'/home/lab3/Dropbox/pyrecords'}

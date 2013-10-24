@@ -160,6 +160,11 @@ class ImageDestroyer(object):
         '''Shortname of infile'''
         return get_shortname(self.image, cut_extension=False)     
 
+    @property
+    def shortname_noext(self):
+        '''Shortname of infile without extension'''
+        return get_shortname(self.image, cut_extension=True)     
+
     ### Coverage and counting properties ###
     @property
     def field_of_view(self):
@@ -904,13 +909,13 @@ class ImageDestroyer(object):
             imjmacro.append('//setTool("rectangle");')        
             imjmacro.append('makeRectangle(%d, %d, %d, %d);'%(self.crop))
             imjmacro.append('run("Crop");')
-            self.cropped_file="%s/%s_cropped.tif" %(self.outpath, self.shortname)
+            self.cropped_file="%s/%s_cropped.tif" %(self.outpath, self.shortname_noext)
             imjmacro.append('saveAs("Tiff", "%s");' % self.cropped_file )        
 
 
 
         ### Necessary to generate and save histogram data through imagej itself ###
-        self.greyscale_file="%s/%s_greyscale.txt"%(self.outpath, self.shortname)    
+        self.greyscale_file="%s/%s_greyscale.txt"%(self.outpath, self.shortname_noext)    
         imjmacro.append('getHistogram(values, counts, 256);')
         imjmacro.append('d=File.open("%s");'% self.greyscale_file)
         imjmacro.append('getThreshold(threshold, max);')
@@ -942,13 +947,13 @@ class ImageDestroyer(object):
                         %(self.particle_parms['rsmall'], self.particle_parms['rlarge'], self.particle_parms['csmall'], self.particle_parms['clarge']))
 
         if out_summary_full:
-            self.results_file="%s/%s_stats_full.txt" %(self.outpath,self.shortname)
+            self.results_file="%s/%s_stats_full.txt" %(self.outpath, self.shortname_noext)
             imjmacro.append('saveAs("Results", "%s");' %self.results_file )
 
 
         ### CHANGE THIS TO ALLOW FOR SEVERAL OUTPUTS! ###
         if out_circles:
-            self.circles_file="%s/%s_circles.tif" %(self.outpath,self.shortname)
+            self.circles_file="%s/%s_circles.tif" %(self.outpath, self.shortname_noext)
             imjmacro.append('saveAs("Tiff", "%s");' %self.circles_file )    
             imjmacro.append('close();')  #Closes the circles window
 
@@ -956,7 +961,7 @@ class ImageDestroyer(object):
         ###### Take a count of just the black and just the white pixels ######
         imjmacro.append('//run("Threshold...");')
         imjmacro.append('run("Convert to Mask");')                    
-        self.bw_file="%s/%s_blackwhite.txt"%(self.outpath, self.shortname)        
+        self.bw_file="%s/%s_blackwhite.txt"%(self.outpath, self.shortname_noext)        
         imjmacro.append('getHistogram(values, counts, 256);')
         imjmacro.append('d=File.open("%s");'%self.bw_file)
         imjmacro.append('getThreshold(threshold, max);')
@@ -965,7 +970,7 @@ class ImageDestroyer(object):
 
         ### Save black/white picture file ###
         if out_thresh:               
-            self.thresh_file="%s/%s_adjusted.tif"%(self.outpath,self.shortname)
+            self.thresh_file="%s/%s_adjusted.tif"%(self.outpath, self.shortname_noext)
             imjmacro.append('saveAs("Tiff", "%s");' %self.thresh_file  )           
 
 
@@ -1360,6 +1365,8 @@ class ImageDestroyer(object):
                          showleft=True, showright=True, showdub=True):
         ''' Stores a histogram of lengths and adds optimized guassian.  Figured it be best to sore
         an internal representation as mean data is important for outfile.  Redundancy with super_histogram().
+        
+        RETURNS: FUll path to plot that was generated
 
            Uses an emprical parameter mpx critical to decide when the optimization would work.  mpx of 3.1nm
            is about 30000k high res, which is the criteria cutoff.
@@ -1494,6 +1501,7 @@ class ImageDestroyer(object):
                 fmat = lambda x:str(round(x,1))  
 
                 plt.title('Guassian Fit Range   %s - %s (%s)'%(fmat(center_x*(1.0-l_left)), fmat(center_x), self.UNITS))
+                plt.minorticks_on()
 
 
                 ### Add text about guassian moments                     
@@ -1504,7 +1512,7 @@ class ImageDestroyer(object):
                 plt.text(xpos, ypos, plt_txt, fontsize=15)  
 
             else:
-                plt.title('Guassian Fit Range    (Fit not found)')
+                plt.title('Guassian Fit Range   {Fit not found}')
 
             if special_outname:
                 outname=special_outname
@@ -1512,9 +1520,12 @@ class ImageDestroyer(object):
                 outname='%s_fithist'%attstyle
                 
             if special_outpath:
-                plt.savefig('%s/%s' %(special_outpath, outname) )              
+                plotpath = op.join(special_outpath, outname)
             else:
-                plt.savefig('%s/%s' %(self.outpath, outname) )           
+                plotpath = op.join(self.outpath, outname)
+                
+            plt.savefig(plotpath)
+            return plotpath
                 
             ### This fits a guassian based on the data using an emperical mean, but is
             ### incomplete and should not be used if optimization is working fine.
@@ -1582,8 +1593,8 @@ class ImageDestroyer(object):
         self.uncorrected_dmean=oldmean
         
         ### Regenerate histogram
-        try:
-            self.hist_and_bestfit(attstyle=attstyle, **histbestfit_kwargs)
+        try: #Returns filepath of histogram
+            return self.hist_and_bestfit(attstyle=attstyle, **histbestfit_kwargs)
         except Exception as E:
             raise Exception('Failed to adjust histogram/guassian: %s',E)
 
