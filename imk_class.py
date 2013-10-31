@@ -260,7 +260,7 @@ class ImageDestroyer(object):
         
         #Early return None
         if not self.fit_amp:
-            return None
+            return (None, None)
 
         f=self.best_fit #For convience rereference function
        
@@ -1287,7 +1287,7 @@ class ImageDestroyer(object):
         working_rights=self.binrights[bin_start:bin_end+1]
         fitpoints=self.best_fit(self.bincenters[bin_start:bin_end+1])
         
-        ### Slice data above below bins, and append to a running series
+        ### Use fit to split data between singles/doubles and append to a running series
         hist_dubs=Series(); hist_singles=Series()
         for i, c in enumerate(working_centers):
             l, r, height = working_lefts[i], working_rights[i], fitpoints[i]
@@ -1423,37 +1423,41 @@ class ImageDestroyer(object):
         counts, bin_edges, patches=plt.hist(working, bins=binnumber, color='green', alpha=0.4) 
 
         bincenters=get_bin_points(bin_edges, position='c')
+        
+        ### Store copy of internal histogram, as aggregation functions may rely on it!
+        self.histogram=counts, bin_edges, patches
 
         ### Relax this if fitting a manual guassian, or maybe let this method try to coarse data!
+        ### User can sort of force min, max or both and this will make sure regions are cut out of histogram  
+        if smart_bin_range:
+            if len(smart_bin_range) != 2:
+                raise AttributeError('Smart bin range must be length two oject between \
+                working ranges %d - %d'%lrange[0], lrange[1])
+            idx_start=self._find_nearest(bincenters, smart_bin_range[0])[0]
+            idx_stop=self._find_nearest(bincenters, smart_bin_range[1])[0]
+
+        else:       
+            idx_start=1
+            idx_stop=None           
+
+        bininds=np.digitize(working, bin_edges)
+        idx_center, center_x=hist_max(counts, bincenters, idx_start=idx_start, idx_stop=idx_stop)[0:2]
+        self.idxhismax, self.xhismax, self.yhismax=hist_max(counts, bincenters, idx_start=idx_start, idx_stop=idx_stop)   #For use later                
+
+        ### Define distance left percentage to probe histogram fit.  
+        idx_left=self._find_nearest(bincenters, (center_x*(1.0-l_left)))[0]
+
+        ### Fit a line of best fit to histogram using only left-data range selected ###
         if self.mpx_crit_met:  
-            ### User can sort of force min, max or both and this will make sure regions are cut out of histogram  
-            if smart_bin_range:
-                if len(smart_bin_range) != 2:
-                    raise AttributeError('Smart bin range must be length two oject between \
-                    working ranges %d - %d'%lrange[0], lrange[1])
-                idx_start=self._find_nearest(bincenters, smart_bin_range[0])[0]
-                idx_stop=self._find_nearest(bincenters, smart_bin_range[1])[0]
-
-            else:       
-                idx_start=1
-                idx_stop=None           
-
-            bininds=np.digitize(working, bin_edges)
-            self.idxhismax, self.xhismax, self.yhismax=hist_max(counts, bincenters, idx_start=idx_start, idx_stop=idx_stop)   #For use later                
-            idx_center, center_x=hist_max(counts, bincenters, idx_start=idx_start, idx_stop=idx_stop)[0:2]
-
-            ### Define distance left percentage to probe histogram fit.  
-            idx_left=self._find_nearest(bincenters, (center_x*(1.0-l_left)))[0]
-
-            ### Fit a line of best fit to histogram using only left-data range selected ###
+    
             symm_counts, symm_centers=psuedo_symmetric(counts, bincenters, idx_start=idx_left)          
-
+    
             ### Fit a shorten, optimized gaussian to the data ###
             short_gauss, self.fit_amp, self.fit_mean, self.fit_sig=optimize_gaussian(symm_counts, symm_centers)     
             self.fit_attribute = attstyle
-
-            ### Store copy of internal histogram, as aggregation functions may rely on it!
-            self.histogram=counts, bin_edges, patches
+            
+        else:
+            logger.critical('Minimum fitting criteria not met (is this a low rew/mag image?)')
 
         if savefig:
 
@@ -1572,13 +1576,13 @@ class ImageDestroyer(object):
         ### If newmean is None, return.  Else, convert to float
         if not newmean:
             return
-        newmean=float(newmean)               
+        newmean = float(newmean)               
         
         try:
-            counts, bins, patches=self.histogram
+            counts, bins, patches = self.histogram
         except Exception:
-            raise AttributeError('Before calling scale_data_from_hist() please\
-            call hist_and_best_fit() to generate')
+            raise AttributeError('Before calling scale_data_from_hist() please'
+            ' call hist_and_best_fit() to generate')
             
         ### Get current mean of curve or histogram
         if self.best_fit and try_curve:
