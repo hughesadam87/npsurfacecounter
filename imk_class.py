@@ -353,7 +353,7 @@ class ImageDestroyer(object):
     @property
     def noisy_coverage(self):
         ''' Coverage due to particles under a certain size restriction.  Set in bsa_count_coverage()'''
-        return self.noisy_area.sum()/self.sampled_area * 100.0
+        return (self.noisy_area.sum()/self.sampled_area) * 100.0
 
     @property
     def noiseless_bw_coverage(self):
@@ -1039,14 +1039,16 @@ class ImageDestroyer(object):
         return range_slice(series, start=wrange[0], stop=wrange[1], style='value') 
     
     def _quick_frame(self, idx_or_series, attr=None):
-        ''' Conveience method to take a series with integer index (or array of integer labels)
+        ''' Given a series with integer index (or array of integer labels)
             and returns the full dataframe of just these values.  If attr specified, this
             only returns the series of that attribute instead of full dataframe.
             
             Useful for, say, you get a series of diamteres from quick_slice and want the corresponding
             circularities of these.  You can pass the output of quick_slice right in here and it will 
             return a dataframe of all rows corresponding to the indicies of hte original series,
-            or just the attr column.'''
+            or just the attr column.
+            
+            Example:  Have series of diameters, want the actual areas or circularities corresponding'''
         
         if isinstance(idx_or_series, Series):
             idx=idx_or_series.index
@@ -1268,7 +1270,6 @@ class ImageDestroyer(object):
         #### Particles that are NOISE d=0 up to d=singles_min ###
         noise_particles=self._quick_slice((0.0, single_low), dataset)
         self.singles_low=single_low #Used for slicing out noise in noiseless particle coverage
-        self.noisy_area=self._quick_frame(noise_particles, 'area')
         self.noise_particles=len(noise_particles)
 
         #### From singleslow to doubles start range, compute estimations of np's from the data itself
@@ -1332,6 +1333,10 @@ class ImageDestroyer(object):
         super_range=(flat_range[1], max(dataset))
         supers=self._quick_slice(super_range, dataset)
         self.super_particle_actual=len(supers)
+        
+        # Compute area-breakdown of various components
+        self.noisy_area = self._quick_frame(noise_particles, 'area')
+        self.singles_area = self._quick_frame(self.single_particles, 'area')
         
         # Reduce big particles into multiples of mean-sized particles        
         if super_adj_style == None:
