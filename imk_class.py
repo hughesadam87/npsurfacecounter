@@ -1258,7 +1258,8 @@ class ImageDestroyer(object):
         flat_range=(flat_low, flat_high)
             
         if doubles_low > single_high:
-            raise Exception('Error in coverage analysis, doubles low is greater than singles low somehow')       
+            raise Exception('Error in coverage analysis, doubles low is greater than singles low somehow.  This can happen'
+                            ' when histogram has a large peak in noise region.')       
             
         bsa_per_surf_area=bsa_count([single_mean], style=self.bsa_countstyle)[0]
         single_mean_surfarea=(pi * single_mean**2)
@@ -1273,7 +1274,7 @@ class ImageDestroyer(object):
         #### From singleslow to doubles start range, compute estimations of np's from the data itself
         #### and not from the binned data.
         left_range=(single_low, doubles_low)  
-        left_single_nps=self._quick_slice(left_range, dataset)
+        self.single_particles=self._quick_slice(left_range, dataset)
 
         ### From the bin closests to doubles low and use it to start sampling data.
         bin_start, count_start=self._find_nearest(self.bincenters, doubles_low)
@@ -1285,30 +1286,33 @@ class ImageDestroyer(object):
         working_centers=self.bincenters[bin_start:bin_end+1]
         working_lefts=self.binlefts[bin_start:bin_end+1]
         working_rights=self.binrights[bin_start:bin_end+1]
-        fitpoints=self.best_fit(self.bincenters[bin_start:bin_end+1])
+
+        # If fit, slice right end to get better resolution on doubles/singles
+        if self.fit_mean:
+            hist_dubs=Series(); hist_singles=Series()
         
-        ### Use fit to split data between singles/doubles and append to a running series
-        hist_dubs=Series(); hist_singles=Series()
-        for i, c in enumerate(working_centers):
-            l, r, height = working_lefts[i], working_rights[i], fitpoints[i]
-            sing, dub=bin_above_below(dataset, l, r, height, shuffle=False)
-            if len(dub) != 0:
-                hist_dubs=hist_dubs.append(dub)
-            if len(sing) != 0:
-                hist_singles=hist_singles.append(sing)
+            ### Use fit to split data between singles/doubles and append to a running series
+            fitpoints=self.best_fit(self.bincenters[bin_start:bin_end+1])
+            for i, c in enumerate(working_centers):
+                l, r, height = working_lefts[i], working_rights[i], fitpoints[i]
+                sing, dub=bin_above_below(dataset, l, r, height, shuffle=False)
+                if len(dub) != 0:
+                    hist_dubs=hist_dubs.append(dub)
+                if len(sing) != 0:
+                    hist_singles=hist_singles.append(sing)
+
+            self.double_particles=hist_dubs.append(self._quick_slice((r, doubles_high), dataset))    
+            self.single_particles=self.single_particles.append(hist_singles)        
+        
+        else:
+            logger.warning('Double particles in %s may be overestimated due to no guassian fit.' % self.image)
+            self.double_particles=self._quick_slice((doubles_low, doubles_high), dataset)        
         
 
-        ### Take singles from histogram, combine with true data singles
-        self.single_particles=left_single_nps.append(hist_singles)        
         self.bsa_from_singles=self._protein_count(self.single_particles, self.bsa_countstyle).sum() #SERIES RETURNED IF NEEDED
-
-        ### Get remaining doubles from dataset (only take values, and combaine w/ psuedo dubs into a series)
-        self.double_particles=hist_dubs.append(self._quick_slice((r, doubles_high), dataset))        
                
-        ### Split doubles to half diameter, then get bsa from these, and then double the bsa count
-        npdoubles=self.double_particles/2.0
-
         ### Get bsa on halfed particles, then double count.  
+        npdoubles=self.double_particles/2.0
         self.bsa_from_doubles=2.0 * self._protein_count(npdoubles, self.bsa_countstyle).sum()
         self.double_particle_equiv=2.0*len(self.double_particles)      
                        
@@ -1448,16 +1452,25 @@ class ImageDestroyer(object):
         idx_left=self._find_nearest(bincenters, (center_x*(1.0-l_left)))[0]
 
         ### Fit a line of best fit to histogram using only left-data range selected ###
-        if self.mpx_crit_met:  
-    
-            symm_counts, symm_centers=psuedo_symmetric(counts, bincenters, idx_start=idx_left)          
-    
-            ### Fit a shorten, optimized gaussian to the data ###
-            short_gauss, self.fit_amp, self.fit_mean, self.fit_sig=optimize_gaussian(symm_counts, symm_centers)     
-            self.fit_attribute = attstyle
+        if not self.mpx_crit_met:  
+            logger.critical('Image minimal pixel criteria not met!  Histogram fitting will not be attempted.'
+                            'Particle counting from histogram is likely to be highly inaccurate if the maxbin'
+                            ' is withing the noise region.')
             
         else:
-            logger.critical('Minimum fitting criteria not met (is this a low rew/mag image?)')
+
+            try:
+                
+                logger.info("Attempting to fit histogram with curve.")
+                symm_counts, symm_centers=psuedo_symmetric(counts, bincenters, idx_start=idx_left)          
+        
+                ### Fit a shorten, optimized gaussian to the data ###
+                short_gauss, self.fit_amp, self.fit_mean, self.fit_sig=optimize_gaussian(symm_counts, symm_centers)     
+                self.fit_attribute = attstyle
+                
+            except Exception as Exc:
+                logger.critical('Fitting of the histogram failed.  All coverage data will be based on histogram counts!') 
+                
 
         if savefig:
 

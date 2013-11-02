@@ -137,15 +137,10 @@ def main(indir, outdir, all_parms, compact_results = True):
 
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
-            try:
-                histpath=imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
-                tex_images[infile_shortname][1] = histpath.split(outroot)[-1] #Add histogram for report
-            except (Exception, LogExit) as e:
-                logger.critical('%s FAILURE: first hist and bestfit ('
-                   'THIS SHOULD NOT FAIL):\n%s' %(infile_shortname, e))
-                continue        
-            
-              
+
+            histpath=imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
+            tex_images[infile_shortname][1] = histpath.split(outroot)[-1] #Add histogram for report
+                   
             #########################
             ## Particle sizing ######
             #########################  
@@ -170,8 +165,8 @@ def main(indir, outdir, all_parms, compact_results = True):
             try:
                 imbuster.coverage_analysis_advanced(flat_high=float(size_parms['flat_high']), single_low=size_parms['sing_low'],
                                                     single_high=size_parms['sing_high'], super_adj_style='hemisphere', super_fill_in_cracks=False)
-            except (Exception, LogExit) as e:
-                logger.critical('%s FAILURE: coverage analysis:\n%s' %(infile_shortname, e))
+            except (Exception, LogExit) as Exc:
+                logger.critical('%s FAILURE: coverage analysis:\n%s' %(infile_shortname, Exc))
                 continue
                                                 
                 
