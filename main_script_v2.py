@@ -6,6 +6,7 @@ from scipy import integrate
 ###Pyrecords imports
 from imjfields import ij_manager, results_manager, grey_manager
 from config import from_file, to_dic #From pyrecords
+from models import TexModel
 
 import logging
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, mak
 from histogram_params import size_hists, grey_hissy, circ_hissy
 
 OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive 
+  
     
 def main(indir, outdir, all_parms, compact_results = True):   
     ''' Script to take a batch of SEM images and perform customized imagej and 
@@ -127,20 +129,21 @@ def main(indir, outdir, all_parms, compact_results = True):
             imbuster.initialize_count_parameters() #Store results in dataframe objects
             logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
             
-            tex_images[infile_shortname] = [ (''), (''), (''), None]
+            # Store attributes for tex summary
+            texmodel = TexModel()
             
             # Make a png version of image or cropped image
             croppedfile = op.join(outpath, op.splitext(infile_shortname)[0]+'_cropped.tif')
             if op.exists(croppedfile):
-                tex_images[infile_shortname][0] = tif_to_png(croppedfile, outpath)
+                texmodel.image_path = tif_to_png(croppedfile, outpath)
             else:
-                tex_images[infile_shortname][0] = tif_to_png(infile, outpath)
+                texmodel.image_path = tif_to_png(infile, outpath)
 
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
 
             histpath=imbuster.hist_and_bestfit(attstyle='psuedo_d', special_outname='D_distribution') #smart_bin_range=(30.0,70.0))  #Store an internal histogram/best fit represntation of length             
-            tex_images[infile_shortname][1] = histpath.split(outroot)[-1] #Add histogram for report
+            texmodel.hist_path1 = histpath.split(outroot)[-1] #Add histogram for report
                    
             #########################
             ## Particle sizing ######
@@ -155,7 +158,7 @@ def main(indir, outdir, all_parms, compact_results = True):
                     npmean = float(npmean)
                     ### Reset the data based on the scaled_data_from_hist
                     histpath=imbuster.scale_data_from_hist(npmean, special_outname = 'D_scaled')
-                    tex_images[infile_shortname][2] = histpath.split(outroot)[-1] #Add histogram for report
+                    texmodel.hist_path2 = histpath.split(outroot)[-1] #Add histogram for report
 
                     logger.info('NPMEAN is: %s.  Data has been rescaled' % npmean)
 
@@ -229,8 +232,10 @@ def main(indir, outdir, all_parms, compact_results = True):
      #       logger.warn('Running adhoc method "test_suite_lowcoverage" from 4/8 testing.')
      #       testdic = test_suite_lowcoverage(imbuster, testdic)           
      
-     
-            tex_images[infile_shortname][3] = imbuster.noiseless_bw_coverage
+            texmodel.set_from_imbuster(imbuster)
+        
+            #Add texmodel to dictionary
+            tex_images[infile_shortname]= texmodel
         
             ### Output individual quicksummary file ###
             imbuster.full_summary()
