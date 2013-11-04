@@ -110,7 +110,6 @@ def main(indir, outdir, all_parms, compact_results = True):
             infile_shortname = get_shortname(infile, cut_extension=False) 
             outpath = op.join(rootpath, get_shortname(infile, cut_extension=True)) #Cut extension is here
             logmkdir(outpath)
-            tex_images[infile_shortname] = [ (''), (''), ('')]
             
             try:                                
                 adjust, crop, npmean = adjust_dic[infile_shortname]          
@@ -127,6 +126,8 @@ def main(indir, outdir, all_parms, compact_results = True):
             imbuster.run_macro()
             imbuster.initialize_count_parameters() #Store results in dataframe objects
             logger.info("Particle stats imported: found %s uncorrected particles." % len(imbuster.areas))
+            
+            tex_images[infile_shortname] = [ (''), (''), (''), None]
             
             # Make a png version of image or cropped image
             croppedfile = op.join(outpath, op.splitext(infile_shortname)[0]+'_cropped.tif')
@@ -226,7 +227,10 @@ def main(indir, outdir, all_parms, compact_results = True):
                 continue                
             ### April 4/8/13 Coverage tests
      #       logger.warn('Running adhoc method "test_suite_lowcoverage" from 4/8 testing.')
-     #       testdic = test_suite_lowcoverage(imbuster, testdic)            
+     #       testdic = test_suite_lowcoverage(imbuster, testdic)           
+     
+     
+            tex_images[infile_shortname][3] = imbuster.noiseless_bw_coverage
         
             ### Output individual quicksummary file ###
             imbuster.full_summary()

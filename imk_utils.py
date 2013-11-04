@@ -47,7 +47,7 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
 
     for idx, key in enumerate(keys):
         # Paths of form /run/mag/imagename/D_distribuion
-        sem_image, hist_path1, hist_path2 = histdic[key]
+        sem_image, hist_path1, hist_path2, bw_cover = histdic[key]
         sem_image, hist_path1, hist_path2 =\
            _hacksplit(sem_image), _hacksplit(hist_path1), _hacksplit(hist_path2)
         

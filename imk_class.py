@@ -128,12 +128,17 @@ class ImageDestroyer(object):
         self.about_zero=0.2 #Lower lim on fit function where it's regarded as 0
         self.hist_inc=100.0 #Number of increments between mean and sigma used when iterating on histogram
 
-        ###Protein coverage analysis stuff
-        self.noisy_area=self.noise_particles=None
-        self.single_particles=self.flat_particle_equiv = self.super_particle_equiv=None      
+        # Particle counting attributes
+        self.noise_particles = self.single_particles=self.flat_particle_equiv = self.super_particle_equiv=None      
         self.flat_particle_actual = self.super_particle_actual = None
+        
+        # Particle area attributes
+        self.noisy_area = self.singles_area = self.doubles_area = \
+            self.flats_area = self.supers_area = None
+        
+        # BSA Attributes
         self.bsa_from_singles = self.bsa_from_flats = self.bsa_from_supers = None
-        self.bsa_parms_numbers= self.bsa_parms_attstyle=self.bsa_cov_style=None        
+        self.bsa_parms_numbers = self.bsa_parms_attstyle=self.bsa_cov_style = None        
         self.bsa_countstyle='dual'
 
         ###Doubles are only returned if coverage_analysis_advanced is used, so if these are 0, it doens't mean 
@@ -353,7 +358,7 @@ class ImageDestroyer(object):
     @property
     def noisy_coverage(self):
         ''' Coverage due to particles under a certain size restriction.  Set in bsa_count_coverage()'''
-        return (self.noisy_area.sum()/self.sampled_area) * 100.0
+        return (self.noisy_area/self.sampled_area) * 100.0
 
     @property
     def noiseless_bw_coverage(self):
@@ -488,6 +493,34 @@ class ImageDestroyer(object):
                     self.super_particle_actual + self.double_particle_actual ) 
                         )
 
+    # FILL FRACTION
+    @property
+    def packing_area(self):
+        ''' Added 11/2/13:  Divides the area consumed by singles, doubles and flats by the 
+            total area of the image MINUS the noise/super particles.  Effectively, cuts out
+            supers and noise, and asks, what percentage is full.  This is the basis for
+            determination of fill fraction.'''
+        
+        area_nosupers = self.sampled_area - (self.supers_area + self.noisy_area)
+        return (self.singles_area + self.doubles_area + self.flats_area) / area_nosupers
+    
+    @property
+    def fillfrac_hexagonal(self):
+        ''' If assume hexagonal packing, maximum area that can be filled is 90.9%. 
+            This just takes packing area divides by 90.9%.  See "circle packing
+              Remember, SUPERS and NOISE already removed '''
+
+        return self.packing_area / .9069
+    
+    @property
+    def fillfrac_square(self):
+        ''' If assume square packing, max area fillable is 0.78598 (pi/4 ).
+              Remember, SUPERS and NOISE already removed '''
+
+        return self.packing_area / 0.78539
+
+
+    # BSA PROPERTIES
     @property
     def _bsa_proportion(self):
         ''' All bsa on image, scaled up to fiber dimensions.  Important for summary.'''
@@ -746,7 +779,6 @@ class ImageDestroyer(object):
         counts=counts[10:250]  ; intensity=intensity[10:250]  
         plt.xlim(intensity[0], intensity[-1]) 
         plt.ylim(min(counts), max(counts))  #MAKE THIS A VARIABLE LATER?
-
 
         plt.text(self.adjust[0]+10, max(counts)*.80, adj_text)    ## (LATER MAKE THIS WORK WITH AUTOMATIC ADJUSTMENTS- unindent     
 
@@ -1228,18 +1260,18 @@ class ImageDestroyer(object):
             if self.fit_min_max[0]:
                 single_low=self.fit_min_max[0] #Uses fitmax as entry condition to save redundancy below
             else:
-                logger.warning('Coverage analysis lower particle size cutoff could not be'
+                logger.warning('%s: Coverage analysis lower particle size cutoff could not be'
                                ' derived from guassian fit!  Instead, applying it as half the diameter'
-                               ' of the max bin on the diameter histogram.')
+                               ' of the max bin on the diameter histogram.' % self.image)
                 single_low=0.5*self.xhismax
                 
         if not single_high:
             if self.fit_min_max[1]:
                 single_high=self.fit_min_max[1]
             else:
-                logger.warning('Coverage analysis upper particle size cutoff could not be'
+                logger.warning('%s: Coverage analysis upper particle size cutoff could not be'
                  ' derived from FIT!  Instead, applying it as 1.5 times the diameter'
-                 ' of the max bin on the diameter histogram.')
+                 ' of the max bin on the diameter histogram.' % self.image)
                 single_high=1.5*self.xhismax       
 
         ### Ensure floats        
@@ -1260,8 +1292,8 @@ class ImageDestroyer(object):
         flat_range=(flat_low, flat_high)
             
         if doubles_low > single_high:
-            raise Exception('Error in coverage analysis, doubles low is greater than singles low somehow.  This can happen'
-                            ' when histogram has a large peak in noise region.')       
+            raise Exception('%s: Error in coverage analysis, doubles low is greater than singles high.  This can happen'
+                            ' when histogram has a large peak in noise region.' % self.image)       
             
         bsa_per_surf_area=bsa_count([single_mean], style=self.bsa_countstyle)[0]
         single_mean_surfarea=(pi * single_mean**2)
@@ -1306,7 +1338,7 @@ class ImageDestroyer(object):
             self.single_particles=self.single_particles.append(hist_singles)        
         
         else:
-            logger.warning('Double particles in %s may be overestimated due to no guassian fit.' % self.image)
+            logger.warning('%s: Double particles may be overestimated due to no guassian fit.' % self.image)
             self.double_particles=self._quick_slice((doubles_low, doubles_high), dataset)        
         
 
@@ -1334,9 +1366,12 @@ class ImageDestroyer(object):
         supers=self._quick_slice(super_range, dataset)
         self.super_particle_actual=len(supers)
         
-        # Compute area-breakdown of various components
-        self.noisy_area = self._quick_frame(noise_particles, 'area')
-        self.singles_area = self._quick_frame(self.single_particles, 'area')
+        # Compute area-breakdown of various components (FOR FILL FRACTION STUFF)
+        self.noisy_area = self._quick_frame(noise_particles, 'area').sum()
+        self.singles_area = self._quick_frame(self.single_particles, 'area').sum()
+        self.doubles_area = self._quick_frame(self.double_particles, 'area').sum()
+        self.flats_area = self._quick_frame(flats, 'area').sum()
+        self.supers_area = self._quick_frame(supers, 'area').sum()
         
         # Reduce big particles into multiples of mean-sized particles        
         if super_adj_style == None:
@@ -1458,9 +1493,9 @@ class ImageDestroyer(object):
 
         ### Fit a line of best fit to histogram using only left-data range selected ###
         if not self.mpx_crit_met:  
-            logger.critical('Image minimal pixel criteria not met!  Histogram fitting will not be attempted.'
+            logger.critical('%s: Image minimal pixel criteria not met!  Histogram fitting will not be attempted.'
                             'Particle counting from histogram is likely to be highly inaccurate if the maxbin'
-                            ' is withing the noise region.')
+                            ' is withing the noise region.' % self.image)
             
         else:
 
@@ -1474,7 +1509,7 @@ class ImageDestroyer(object):
                 self.fit_attribute = attstyle
                 
             except Exception as Exc:
-                logger.critical('Fitting of the histogram failed.  All coverage data will be based on histogram counts!') 
+                logger.critical('%s: Fitting of the histogram failed.  All coverage data will be based on histogram counts!' % self.image) 
                 
 
         if savefig:
@@ -1483,16 +1518,17 @@ class ImageDestroyer(object):
             plt.ylabel('Counts')                
 
             ### Relax this if fitting a manual guassian, or maybe let this method try to coarse data!
-            if self.mpx_crit_met:  ### Is this the best condition?
+            if self.best_fit:  ### Is this the best condition?
 
-                ### Trace and plot line automatic gaussian/line of best fit
-                if self.fit_min_max:
-                    fitmin, fitmax = self.fit_min_max[0], self.fit_min_max[1]
-                    if fitmin and fitmax:                    
-                        xfunc=np.arange(self.fit_min_max[0], self.fit_min_max[1], self.dx)
-                        plt.plot(xfunc, self.best_fit(xfunc), color='blue')
-                    
-                plt.plot(bincenters, self.best_fit(bincenters), color='black', ls='--')
+                #### Trace and plot line automatic gaussian/line of best fit
+                #if self.fit_min_max:
+                fitmin, fitmax = self.fit_min_max[0], self.fit_min_max[1]
+                if fitmin and fitmax:                    
+                    xfunc=np.arange(self.fit_min_max[0], self.fit_min_max[1], self.dx)
+                    plt.plot(xfunc, self.best_fit(xfunc), color='blue')
+         
+                else:       
+                    plt.plot(bincenters, self.best_fit(bincenters), color='black', ls='--')
                 
                 ###Make top of plot 5% higher than max bin.  Necessary to have this for vlines 
                 yviewmax=1.05*self.best_fit(bincenters).max()
@@ -1651,6 +1687,11 @@ class ImageDestroyer(object):
 
         ### Essential parameters, coverage, nps, bsa, sizing
         elif style.lower() == 'lite':
+            if self.xhismax:
+                dout = r2(self.xhismax)
+            else:
+                dout = 'None'
+
             outparms=(
                       ('Image', self.shortname),                
                       ('NPS', '%.2e' % self.np_total_corrected),                      
@@ -1659,8 +1700,9 @@ class ImageDestroyer(object):
                       # Particle equivalents; no noise
                       ('single_eqvs', r2(100.0 * float(self.single_counts) / self._np_total_equiv_nonoise)),
                       ('double_eqvs', r2(100.0 * float(self.double_particle_equiv) / self._np_total_equiv_nonoise)),
-                      ('flat_eqvs', r2(100.0 * float(self.flat_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('flat_eqvs',  r2(100.0 * float(self.flat_particle_equiv) / self._np_total_equiv_nonoise)),
                       ('super_eqvs', r2(100.0 * float(self.super_particle_equiv) / self._np_total_equiv_nonoise)),
+                      ('Diam Est(%s)'%self.UNITS, dout), 
                       ('bw_nonoise(%)',r2(self.noiseless_bw_coverage))                      
                     )
             
@@ -1673,9 +1715,10 @@ class ImageDestroyer(object):
                       # Actual particle counts; no noise
                       ('single_true',r2(100.0* float(self.single_counts) / self._np_total_actual_nonoise)),
                       ('double_true' ,r2(100.0* float(self.double_particle_actual) / self._np_total_actual_nonoise)),               
-                      ('flat_true',r2(100.0* float(self.flat_particle_actual) / self._np_total_actual_nonoise)),
-                      ('super_true',r2(100.0* float(self.super_particle_actual) / self._np_total_actual_nonoise)),
-                      ('corr_cov(%)',r2(self.mean_corrected_coverage))                                            
+                      ('flat_true', '%.2e' % (100.0 * float(self.flat_particle_actual) / self._np_total_actual_nonoise)),
+                      ('super_true', '%.2e' % (100.0 * float(self.super_particle_actual) / self._np_total_actual_nonoise)),
+                      ('corr_cov(%)',r2(self.mean_corrected_coverage)),   
+                      ('hex_ffrac(%)',r2(self.fillfrac_hexagonal * 100.0))
                       
                     )
             
