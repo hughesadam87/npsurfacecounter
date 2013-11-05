@@ -98,7 +98,7 @@ def hist_max(counts, bins, idx_start=0, idx_stop=None):
     
     max_idx=np.where(crange==countmax)[0]
     if max_idx.shape[0] > 1:
-        raise Warning('There are two bins in histogram that have idenitcal maxima and this might trip out gaussian autfit functions!  Using first one.')
+        logger.warn('There are two bins in histogram that have idenitcal maxima and this might trip out gaussian autfit functions!  Using first one.')
     max_idx=max_idx[0]+idx_start
     binmax=bins[max_idx]
     return max_idx, binmax, countmax  #index of maximum, bin(x) value, count(y) value at max

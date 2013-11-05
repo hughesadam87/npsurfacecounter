@@ -26,9 +26,12 @@ pyrec_path = {'ADAMS_LAB_PC':'/media/backup/Dropbox/pyrecords',
 sys.path.append(pyrec_path[selected])
 
 ### import pyrecord stuff
-from Utilities.utils import from_file, to_dataframe, to_dic #From pyrecords
-from Utilities.utils import histogram as hcount #To avoid namespace conflicts
-from Core.immutablemanager import ImmutableManager
+try:
+    from Utilities.utils import from_file, to_dataframe, to_dic #From pyrecords
+    from Utilities.utils import histogram as hcount #To avoid namespace conflicts
+    from Core.immutablemanager import ImmutableManager
+except ImportError:
+    raise Exception("config.py failed to find imports; make sure you set your selection.")
 
 
 ### ImageJ path

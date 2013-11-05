@@ -17,16 +17,16 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
     ''' Takes a dictionary of length 2 image paths IE:
           { 'foo': ('path1', 'path2') }  
         Thought it doens't matter, better if paths are relative 
-        so full directory tree can be copy pasted.
+        so full directory tree can be copy pasted.  
 
         Writes a subfigure with relative figs path.'''
 
     # Only way I can find to concantate long string that has raw literals
     template = (r'\begin{figure}[h!]\centering' + '\n'
        + '%s' + '\n' #HYPERTARGET GOES HERE
-       + '\subfigure[]{\includegraphics[width=12cm]{%s} }' + '\n' 
-       + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' + '\n' 
-       + '\subfigure[]{\includegraphics[width=6.5cm]{%s} }' +  '\n'
+       + '\subfigure{\includegraphics[width=12cm]{%s} }' + '\n'  #subfigure[] for labeled/lettered
+       + '\subfigure{\includegraphics[width=6.5cm]{%s} }' + '\n' 
+       + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
       + '\label{%s}' +  '\n' 
        + '\caption*{%s}' +'\n' #caption* mean "Figure 1" is not printed
        + '\end{figure}' + '\n\n' )
@@ -47,14 +47,16 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
 
     for idx, key in enumerate(keys):
         # Paths of form /run/mag/imagename/D_distribuion
-        sem_image, hist_path1, hist_path2 = histdic[key]
-        sem_image, hist_path1, hist_path2 =\
-           _hacksplit(sem_image), _hacksplit(hist_path1), _hacksplit(hist_path2)
+        model = histdic[key]
+        
+        sem_image = _hacksplit(model.image_path)
+        hist_path1 = _hacksplit(model.hist_path1)
+        hist_path2 = _hacksplit(model.hist_path2)
         
         if 'crop' in sem_image:
-            cropmessage = 'Image has been cropped.'
+            cropmessage = r'Cropped: {\bf True}'
         else:
-            cropmessage = 'Image has not been cropped.'
+            cropmessage = r'Cropped: {\bf False}'
         
         # Extract only folder name (ie path/to/f3_30000/) 
         imagename = op.split(op.dirname(hist_path1))[-1]
@@ -62,9 +64,11 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
         hypertarget = '\hypertarget{%s}{\;}' % 'hist%s' % imagename.replace('_', '\_')
         
         caption = tex_string(
-            r'{\hyperlink{%s}{\color{blue} \small \ttfamily %s}:  SEM image (a) and histograms of unaltered (b)'
-            ' and SIZE-CORRECTED (c) AuNP diameters. (%s)}' % (TABLETARGET, imagename, cropmessage)
+            r'{\hyperlink{%s}{\color{blue} \small \ttfamily %s}:  SEM image (top) and histograms of unaltered (left)'
+            ' and SIZE-CORRECTED (right) AuNP diameters.\\\\%s \;\; %s}' % 
+            (TABLETARGET, imagename, cropmessage, model.as_tex_string())
             )
+        
                                                                             
         out += template % (hypertarget, sem_image, hist_path1, hist_path2, 
                  ('semimg'+str(idx)), caption) #image label chosen arbitrarily
