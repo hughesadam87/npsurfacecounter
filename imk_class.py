@@ -824,9 +824,6 @@ class ImageDestroyer(object):
         bininds=np.digitize(subset[xattr], bin_edges)
         xhismax, yhismax=hist_max(counts, bincenters, idx_start=0, idx_stop=None)[1:3]   #For use later     
 
-
-
-
         xname=xattr  #Used for outputting onto plot, don't want to overwrite the attribute   
 
         #### Correct for logarithms name:function, out representation ###   

@@ -132,6 +132,7 @@ def main(indir, outdir, all_parms, compact_results = True):
             # Store attributes for tex summary
             texmodel = TexModel()
             
+            texmodel.adjust = adjust
             # Make a png version of image or cropped image
             croppedfile = op.join(outpath, op.splitext(infile_shortname)[0]+'_cropped.tif')
             if op.exists(croppedfile):

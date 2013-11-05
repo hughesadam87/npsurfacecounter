@@ -8,14 +8,16 @@ def r2(x):
     return str(round(x,2))
 
 class TexModel(object):
-    ''' Store various attributes from imk_class temporarily.
-        This is more memory efficient than accessing object directly, and not
-        all of htese image paths are stored as attributes.
+    ''' Store various attributes from imk_class, main_script.
+        Storage and output are designed for compatability with tex formatting
+        utilities.
     '''
     
     image_path = '' #Etiher full image or cropped file
     hist_path1 = ''
     hist_path2 = ''
+    
+    adjust = None
     
     # Imbuster coverage params
     bw_coverage = None
@@ -30,10 +32,16 @@ class TexModel(object):
         self.hex_ffrac = obj.fillfrac_hexagonal * 100.0
         
     def as_tex_string(self):
-        ''' Returns coverage params texorated string, rounded.'''
+        ''' Returns several parameters as r2-rounded string, separated
+            by " \;\; " (ie 2 spaces in latex).'''
     
         bwmessage = r'BW coverage: {\bf %s}' % r2(self.bw_coverage)
         corrmessage = r'corr coverage: {\bf %s}' % r2(self.corr_coverage)
-        ffmessage = r'hex fillfrac: {\bf %s}' % r2(self.hex_ffrac)      
-        
-        return '%s \;\; %s \;\; %s' % (bwmessage, corrmessage, ffmessage)
+        ffmessage = r'hex fillfrac: {\bf %s}' % r2(self.hex_ffrac)  
+
+        if self.adjust:
+            adjmessage = r'man-adjustment: {\bf \color{blue}{Yes}}'
+        else:
+            adjmessage = r'man-adjustment: {\bf \color{red}{No}}'
+            
+        return ' \:\: '.join([bwmessage, corrmessage, ffmessage, adjmessage])
