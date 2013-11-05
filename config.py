@@ -7,7 +7,7 @@ import sys
 #################
 ### CHANGE ME ###
 #################
-selected = 'ADAMS_LAB_PC'
+selected = 'LABPC'
 
 # Set of possible computers to choose from.  LABPC2 is evelyn's main station next to adam's lab computer and
 # also desktop by printer.
