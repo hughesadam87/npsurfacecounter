@@ -1,0 +1,12 @@
+The module, recordtype_2011.py is a factory function to generate namedtuples with default values in a similar manner to how namedtuple creates object.
+I did not write this code; rather, I downloaded it (http://code.activestate.com/recipes/500261/) and used it for inspiration in my own coding.
+
+This is a very nice implementation of mutability with namedfields and I use it as a reference often in my methodology.  One problem I had earlyon with
+this implementation was that even though it was made to look like a namedtuple, some namedtuple methods weren't implemented on it.  For example, _make().
+It seemed to me that it would more difficult to incorporate these methods and other behaviors, when I could just use namedtuples legitimately and do
+default and typechecking pre-instantiation.  Of course, once I decided to incorporate mutables, then it became necessary to use a python subclass object
+and make it act like a namedtuple.  As the mutable class grows, it may eventually just make more sense to modify the recordtype_2011.  I'm pretty sure
+that recordtype_2011 has less memory overhead than my Mutable type, which derives from object, but I'll have to test it.  I think right now it's 
+more important to create Immutable and Mutable containers that share identical methods so that all the utilities and analysis tools built around them
+will work seemlessly with either type.  As this project matures, I may come back on overhaul the Mutable container.
+

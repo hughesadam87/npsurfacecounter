@@ -1,0 +1,174 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pyrecords.Core.immutablemanager &mdash; PyRecords 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/agogo.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="PyRecords 0.1 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="header-wrapper">
+      <div class="header">
+        <div class="headertitle"><a
+          href="../../../index.html">PyRecords 0.1 documentation</a></div>
+        <div class="rel">
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a>
+        </div>
+       </div>
+    </div>
+
+    <div class="content-wrapper">
+      <div class="content">
+        <div class="document">
+            
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for pyrecords.Core.immutablemanager</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">abstractmanager</span> <span class="kn">import</span> <span class="n">AbstractManager</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<div class="viewcode-block" id="ImmutableManager"><a class="viewcode-back" href="../../../API/pyrecords.Core.html#pyrecords.Core.immutablemanager.ImmutableManager">[docs]</a><span class="k">class</span> <span class="nc">ImmutableManager</span><span class="p">(</span><span class="n">AbstractManager</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Class used to shell out mutable or immutable typedchecked records.&#39;&#39;&#39;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ImmutableManager</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;verbose&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>       
+
+        <span class="c">### If mutable, return named tuple; otherwise, return object subclass</span>
+        <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">typename</span><span class="p">]</span><span class="o">=</span><span class="n">namedtuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">typename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strict_fields</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">)</span>  <span class="c">#Creates a namedtuple class </span>
+
+    <span class="k">def</span> <span class="nf">_make_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">typename</span><span class="p">]</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>  <span class="c">#Return named tuple</span>
+    
+    <span class="k">def</span> <span class="nf">_dict_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">typename</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>	
+    <span class="n">personfields</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s">&#39;name&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="s">&#39;unnamed&#39;</span><span class="p">)</span> <span class="p">),</span> <span class="p">(</span><span class="s">&#39;age&#39;</span><span class="p">,</span><span class="nb">int</span><span class="p">()</span> <span class="p">),</span> <span class="p">(</span><span class="s">&#39;income&#39;</span><span class="p">,</span><span class="nb">float</span><span class="p">()</span> <span class="p">)</span>
+                  <span class="p">]</span>
+    <span class="c">### Construct the class builder ###</span>
+    <span class="n">personmanager</span><span class="o">=</span><span class="n">ImmutableManager</span><span class="p">(</span><span class="s">&#39;Person&#39;</span><span class="p">,</span> <span class="n">personfields</span><span class="p">)</span>
+
+    <span class="c">### Get some people ###</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Lets make some people</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">bill</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">_make</span><span class="p">([</span><span class="s">&#39;Billy Gundam&#39;</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mf">10000.00</span><span class="p">])</span>
+    <span class="n">jill</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">_make</span><span class="p">([</span><span class="s">&#39;Jill Blanks&#39;</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mf">15000.00</span><span class="p">])</span>
+    <span class="n">glue</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">_make</span><span class="p">([</span><span class="s">&#39;glue&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">]</span> <span class="p">)</span>
+    <span class="k">print</span> <span class="n">bill</span>
+    <span class="k">print</span> <span class="n">jill</span>
+    <span class="k">print</span> <span class="n">glue</span>
+
+
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">These are all still of type namedtuple, so all the builtin methods work</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">Conversion to dictionary with _asdict()</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="k">print</span> <span class="n">glue</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">New named tuple with Field Replacement</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="k">print</span> <span class="n">glue</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Not sara&#39;</span><span class="p">)</span>
+
+    <span class="c">### TO MAKE: Let class take in keyword args to make objects from dict (mimicing **d), maybe</span>
+    <span class="c">### may have to settle doing this from a new method like personmanager.fromdict()</span>
+
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">I can still subclass the namedtuple; although, now it defaults back to a namedtuple.  Extra </span><span class="se">\\\</span>
+<span class="s">    methods for subclassing need to be incoprorated.  Something like personmanager.subclass.</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">SuperPerson</span><span class="o">=</span><span class="n">namedtuple</span><span class="p">(</span><span class="s">&#39;SuperPerson&#39;</span><span class="p">,</span> <span class="n">personmanager</span><span class="o">.</span><span class="n">Person</span><span class="o">.</span><span class="n">_fields</span><span class="o">+</span> <span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="s">&#39;weight&#39;</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">sara</span><span class="o">=</span><span class="n">SuperPerson</span><span class="p">(</span><span class="s">&#39;Sara Jenkins&#39;</span><span class="p">,</span> <span class="mf">32.3</span><span class="p">,</span> <span class="mi">32000</span><span class="p">,</span> <span class="s">&#39;6feet&#39;</span><span class="p">,</span> <span class="s">&#39;150lbs&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">sara</span>
+
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">I can still refer directly to the class itself, which is sometimes necessary.  For example, </span><span class="se">\</span>
+<span class="s">           if I want to directly instantiate from a dictionary with **d notation.  Although, now defaults </span><span class="se">\</span>
+<span class="s">           and fields are nolonger enforced.</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">mydict</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&#39;Jason&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span> <span class="s">&#39;income&#39;</span><span class="p">:</span><span class="mf">4.0</span><span class="p">}</span>
+    <span class="n">jason</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">Person</span><span class="p">(</span><span class="o">**</span><span class="n">mydict</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">jason</span>
+
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">If I want to pass a dictionary AND have it typechecked, there is a new method for that called </span><span class="se">\</span>
+<span class="s">          dict_make.  Note that the dictionary was incomplete and the default record value was returned instead</span><span class="se">\</span>
+<span class="s">          of returning an error!&#39;</span>
+    <span class="n">freddict</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span><span class="s">&#39;Fred&#39;</span><span class="p">,</span> <span class="s">&#39;age&#39;</span><span class="p">:</span><span class="mi">32</span><span class="p">}</span>
+    <span class="n">fred</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">dict_make</span><span class="p">(</span><span class="o">**</span><span class="n">freddict</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">fred</span>
+
+    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">If I tried to instantiate a named tuple directly with an incomplete dictionary, I would get an error&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fred</span><span class="o">=</span><span class="n">personmanager</span><span class="o">.</span><span class="n">Person</span><span class="p">(</span><span class="o">**</span><span class="n">freddict</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;Yup I just errored big time&#39;</span>    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+        </div>
+        <div class="sidebar">
+          <h3>Table Of Contents</h3>
+          <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Tutorial/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../API/pyrecords.html">API</a></li>
+</ul>
+
+          <h3 style="margin-top: 1.5em;">Search</h3>
+          <form class="search" action="../../../search.html" method="get">
+            <input type="text" name="q" />
+            <input type="submit" value="Go" />
+            <input type="hidden" name="check_keywords" value="yes" />
+            <input type="hidden" name="area" value="default" />
+          </form>
+          <p class="searchtip" style="font-size: 90%">
+            Enter search terms or a module, class or function name.
+          </p>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+    <div class="footer-wrapper">
+      <div class="footer">
+        <div class="left">
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |
+          <a href="../../../genindex.html" title="General Index"
+             >index</a>
+        </div>
+
+        <div class="right">
+          
+    <div class="footer">
+        &copy; Copyright 2012, Adam Hughes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+        </div>
+        <div class="clearer"></div>
+      </div>
+    </div>
+
+  </body>
+</html>
