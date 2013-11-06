@@ -24,7 +24,7 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
     # Only way I can find to concantate long string that has raw literals
     template = (r'\begin{figure}[h!]\centering' + '\n'
        + '%s' + '\n' #HYPERTARGET GOES HERE
-       + '\subfigure{\includegraphics[width=12cm, height=8cm]{%s} }' + '\n'  #subfigure[] for labeled/lettered
+       + '\subfigure{\includegraphics[width=12cm, height=8cm, keepaspectratio]{%s} }' + '\n'  #subfigure[] for labeled/lettered
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' + '\n' 
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
