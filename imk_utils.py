@@ -26,7 +26,7 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
        + '%s' + '\n' #HYPERTARGET GOES HERE
        + '\subfigure{\includegraphics[width=12cm, height=8cm, keepaspectratio]{%s} }\\\\' + '\n'  #subfigure[] for labeled/lettered
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' + '\n' 
-       + '\subfigure{\includegraphics[width=6.5cm, height=4.875cm, keepaspectratio]{%s} }' +  '\n'
+       + '\subfigure{\includegraphics[width=6.5cm, height=4.875cm, keepaspectratio, frame]{%s} }' +  '\n'
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
       + '\label{%s}' +  '\n' 
