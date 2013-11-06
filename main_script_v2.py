@@ -139,7 +139,11 @@ def main(indir, outdir, all_parms, compact_results = True):
                 texmodel.image_path = tif_to_png(croppedfile, outpath)
             else:
                 texmodel.image_path = tif_to_png(infile, outpath)
-
+                
+            adj_path = op.join(outpath, op.splitext(infile_shortname)[0]+'_adjusted.tif')
+            texmodel.adjust_path = tif_to_png(adj_path, outpath)
+            
+            texmodel.bright_path = op.join(outpath, 'Brightness_distribution.png')             
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
 
@@ -176,7 +180,6 @@ def main(indir, outdir, all_parms, compact_results = True):
                                                 
                 
             logger.info('Coverage analysis completed')
-
 
             try:
             

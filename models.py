@@ -8,14 +8,15 @@ def r2(x):
     return str(round(x,2))
 
 class TexModel(object):
-    ''' Store various attributes from imk_class, main_script.
-        Storage and output are designed for compatability with tex formatting
-        utilities.
+    ''' Store various attributes from imk_class, as well as file paths from
+        main_script output. Used by tex-generating functions.
     '''
     
     image_path = '' #Etiher full image or cropped file
     hist_path1 = ''
     hist_path2 = ''
+    adjust_path = ''
+    bright_path = ''
     
     adjust = None
     
