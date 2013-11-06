@@ -70,7 +70,7 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
         
         caption = tex_string(
             r'{\hyperlink{%s}{\color{blue} \small \ttfamily %s}: '
-            'SEM image, uncorrected (top-left)/corrected (bottom-left), '
+            'SEM image, raw (top)/size-corrected (bottom), '
             'diam histograms, binary, grayscale.\\\\%s \;\; %s}' % 
             (TABLETARGET, imagename, cropmessage, model.as_tex_string())
             )
