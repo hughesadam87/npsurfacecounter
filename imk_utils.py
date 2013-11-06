@@ -37,9 +37,9 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
     # Add document header (commented out) and enough packages to compile standalone
     out = '%\documentclass{article}\n'
     out += ('%\usepackage{amsmath}\n' + '%\usepackage[export]{adjustbox}\n' + '%\usepackage{morefloats}\n'
-            '%\usepackage{xcolor}\n' + '%\usepackage[pdftex]{graphicx}\n' + ' %\usepackage{subfigure}\n'
+            '%\usepackage{xcolor}\n' + '%\usepackage[pdftex]{graphicx}\n' + '%\usepackage{subfigure}\n'
             '%\usepackage[scriptsize]{caption}\n' + '%\usepackage{geometry}\n' + '%\usepackage{hyperref}\n\n') 
-    out += r'%\begin{document}' + '\n'
+    out += r'%\begin{document}' + '\n\n'
 
 
     keys = histdic.keys()
