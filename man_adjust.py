@@ -360,7 +360,6 @@ manual_adjustments['feb_26_13'] = {
     'f1_30000_2_low.tif':((120,255),(3,6,3060,2001),(new_22)),
     'f1_30000_2_high.tif':((135,255),(3,6,3060,2001),(new_22)),
     'f4_83000.tif':((66,255), (201,57,1713,1485), (new_22)) #THIS ONE has lots of gunk, hopefully crop is good engou to get it working
-    
     }
 
 manual_adjustments['march_7_13'] = {
@@ -385,6 +384,13 @@ manual_adjustments['march_7_13'] = {
     'F2_72600_low.tif':((104,255),(48, 60, 3024, 1924),(new_22)),   #Doublechek none
     'F2_72600_high.tif':((115,255),(48, 60, 3024, 1924),(new_22)),
     }
+
+manual_adjustments['apr_29_13'] = {
+    'f1_30000.tif':((142,255), (21, 18, 3051, 2133), (new_22)),
+    'f2_30000.tif':((130,255), (3, 9, 3069, 2040), (new_22)),
+    'f2_100000.tif':((143,255), (2, 4, 1022, 708), (new_22))
+    }
+
 
 manual_adjustments['sept_4_13_UV50'] = {
     'f1_30k_2_auto.tif':((None), (3, 0, 3069, 1452), (new_22)),
