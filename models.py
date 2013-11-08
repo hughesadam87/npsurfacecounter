@@ -42,8 +42,8 @@ class TexModel(object):
         ffmessage = r'hex fillfrac: {\bf %s}' % r2(self.hex_ffrac)  
 
         if self.adjust:
-            adjmessage = r'man-adjustment: {\bf \color{blue}{Yes}}'
+            adjmessage = r'man-adjustment: {\bf \color{blue}{Yes}'
         else:
-            adjmessage = r'man-adjustment: {\bf \color{red}{No}}'
+            adjmessage = r'man-adjustment: {\bf \color{red}{No}'
             
         return ' \:\: '.join([bwmessage, corrmessage, ffmessage, adjmessage])

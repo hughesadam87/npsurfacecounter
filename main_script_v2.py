@@ -72,6 +72,9 @@ def main(indir, outdir, all_parms, compact_results = True):
     light_summary_filename = op.join(outdir, 'light_summary.xls')
     coverage_summary = op.join(outdir, 'detailed_summary.xls')
     
+    _lite1=''
+    _lite2=''
+    
     full_summary = logwritefile(summary_filename)
     light_summary = logwritefile(light_summary_filename)
     cov_summ = logwritefile(coverage_summary)
@@ -246,19 +249,19 @@ def main(indir, outdir, all_parms, compact_results = True):
             ## Add results to the run summary file ##
             if filecount == 0:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='full') 
-                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite')     
-                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite_part_2')
+                _lite1 += imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite')
+                _lite2 += imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='lite_part_2')
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=True, style='detailed')              
   
             else:
                 sum_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='full')
-                lite_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')        
-                lite_out_2 = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='lite_part_2')                
+                _lite1 += imbuster.special_summary(delim=OUT_DELIM, with_header=False,style='lite')
+                _lite2 += imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='lite_part_2')          
                 cov_out = imbuster.special_summary(delim=OUT_DELIM, with_header=False, style='detailed')     
 
                 
             full_summary.write(sum_out)
-            light_summary.write(lite_out +'\n' + lite_out_2)
+            light_summary.write(_lite1 +'\n\n' + _lite2)
             cov_summ.write(cov_out)
             
             filecount+=1
@@ -276,7 +279,7 @@ def main(indir, outdir, all_parms, compact_results = True):
     
     with open(summarytablepath, 'w') as o:        
         try:
-            for idx, sumfile in enumerate([lite_out, lite_out_2]):
+            for idx, sumfile in enumerate([_lite1, _lite2]):
                 if idx == 0:
                     head = op.basename(indir)
                 else:

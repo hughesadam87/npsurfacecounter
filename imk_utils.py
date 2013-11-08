@@ -115,30 +115,29 @@ def to_histsummary(histdic, fontsize='scriptsize', sort=True):
         # Extract only folder name (ie path/to/f3_30000/) 
         imagename = op.split(op.dirname(hist_path1))[-1]
 
-        hypertarget = '\hypertarget{%s}{\;}' % 'hist%s' % imagename.replace('_', '\_')
+        hypertarget = '\hypertarget{%s}{\;}' % 'hist%s' % imagename
         
-        caption = tex_string(
-            r'{\hyperlink{%s}{\color{blue} \small \ttfamily %s}: '
+        caption = '\hyperlink{%s}' % TABLETARGET + tex_string(
+            r'{\color{blue} \small \ttfamily %s}: '
             'SEM image, raw (top)/size-corrected (bottom), '
             'diam histograms, binary, grayscale.\\\\%s \;\; %s}' % 
-            (TABLETARGET, imagename, cropmessage, model.as_tex_string())
-            )
+            ( imagename, cropmessage, model.as_tex_string()) )
         
                                                                             
-        out += template % (model.folder, imagename.replace('_', '\\_'), hypertarget, sem_image, hist_path1, adjust_path, hist_path2, bright_path, 
+        out += template % (model.folder.replace('_', '\\_'), imagename.replace('_', '\\_'), hypertarget, sem_image, hist_path1, adjust_path, hist_path2, bright_path, 
                            ('semimg'+str(idx)), caption) #image label chosen arbitrarily
     return out  
 
 
 
-def to_textable(lines, fontsize='tiny', head='', sort=True):
+def to_textable(linestring, fontsize='tiny', head='', sort=True):
     ''' Hackasauraus.  Only useful to Adam.  Takes in the lines
         that are supposed to be correspond to light_summary, and
         turns them into a .tex table.  If head, the top line is assumes
-        as the row label. '''
+        as the row label.'''
             
     # Strip newlines, remove blank lines
-    lines = lines.split('\n') #Same as .readlines from file
+    lines = linestring.split('\n') #Same as .readlines from file
     lines = [line.strip() for line in lines if line]
     lines = [line for line in lines if line]
     header = lines.pop(0)
@@ -155,6 +154,8 @@ def to_textable(lines, fontsize='tiny', head='', sort=True):
         + '\n\end{adjustwidth}\n\n')
 
     #Table header {c | c  etc...}
+    table += r'\begin{table}[h]' + '\n'
+    table += '\scriptsize\n'
     table += r'\begin{adjustwidth}{-1cm}{}' + '\n'
     table += '\hypertarget{%s}{\;}\n' % TABLETARGET #Hypertarget for histograms 
     table += r'\begin{tabular}{ |'
@@ -165,22 +166,22 @@ def to_textable(lines, fontsize='tiny', head='', sort=True):
     for idx, line in enumerate(lines):
         if idx == 0:
             # Bool text top row
-            line = '\t'.join([r'{ \bf %s }' % word for word in line.split('\t')])
+            line = tex_string('\t'.join([r'{ \bf %s }' % word for word in line.split('\t')]))
 
         else:
             # Overwrite imagename to have a hyperlink to plot
             sline=line.split('\t')
-            firstword = '{\hyperlink{hist%s}{\color{blue}%s}}' % (op.splitext(sline[0])[0], sline[0])
+            # Hyperlink argument can't have "\_", so realy hacky to reform line the right way!
+            firstword = '{\hyperlink{hist%s}{\color{blue}%s}}' % (op.splitext(sline[0])[0], tex_string(sline[0]))
             sline[0] = firstword
-            line = '\t'.join(sline)
+            line = sline[0] + ' & ' + tex_string('\t'.join(sline[1:]))
         
         
-        table += tex_string(line)          
+        table += line          
         table += '\\\\ \hline\n'
         
                
-    table += '\end{tabular}\n\end{adjustwidth}\n}'    
-    #table += '\n\n%\end{document}'
+    table += '\end{tabular}\n\end{adjustwidth}\n\end{table}'    
     return table
 
 def logmkdir(fullpath):
