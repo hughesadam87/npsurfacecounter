@@ -302,21 +302,20 @@ def main(indir, outdir, all_parms, compact_results = True):
     logger.info("Compiling preview.tex")
        
     ### Sort .xls files output, specify alternative file extensions
-    out_exts=['.txt']
+    out_ext = '.txt'
     outsums=[summary_filename, coverage_summary]    
     
     logger.info("Attempting sort summary.")        
     for sumfile in outsums:
         try:        
             sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
-            for ext in out_exts:
-                shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
+            shutil.copyfile(sumfile, sumfile.split('.')[0] + out_ext)
 
         except (Exception, LogExit) as e:
             logger.warn('%s sort summary failed!' % sumfile )  
 
     # Handle light summary specially
-    shutil.copyfile(light_summary_filename, light_summary_filename.split('.')[0] + ext)
+    shutil.copyfile(light_summary_filename, light_summary_filename.split('.')[0] + out_ext)
 
           
 
