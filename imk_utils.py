@@ -13,7 +13,53 @@ def tex_string(string):
     ''' Reformat various characters to be latex compatible'''
     return string.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')   
 
-def to_texfigure(histdic, fontsize='scriptsize', sort=True):
+def tex_preview(summarytablepath, histsummarypath):
+    ''' Writes a "preview" string which wraps input statements to summarytable.tex
+        and histsummary.tex.  Thus, serving as a way to preview sem results without
+        changing code in histsummary or summarytable files.'''
+    
+    out = ( '\documentclass{article}\n\n' +
+            '\usepackage{amsmath}\n' +
+            '\usepackage{amssymb}\n' +
+            '\usepackage[absolute,overlay]{textpos}\n' +
+            '\usepackage[pdftex]{graphicx}\n' +
+            '\usepackage[export]{adjustbox}\n' +
+            '\usepackage{morefloats}\n' +
+            '\usepackage{amsthm}\n' +
+            '\usepackage{import}\n' +
+            '\usepackage{changepage}\n' +
+            '\usepackage{gensymb}\n' +
+            '\usepackage{xcolor}\n' +
+            '\usepackage{scrextend}\n' +
+            '\usepackage{pdfpages}\n' +
+            '\usepackage{subfigure}\n' +
+            '\usepackage[scriptsize]{caption}\n' +
+            '\usepackage{changepage}\n' +
+            '\usepackage{multicol}\n' +
+            '\usepackage{enumitem}\n' +
+            '\usepackage{xifthen}\n' +
+            '\usepackage{geometry}\n' +
+            '\usepackage{hyperref}\n' +
+            '\hypersetup{\n' +
+                'colorlinks=true, \n' +
+                'linkcolor=black,\n' +
+                'citecolor=black,\n' +
+                'filecolor=black,\n' +
+                'urlcolor=blue, \n' +
+                '}\n\n'
+          )
+
+    out += r'\begin{document}' + '\n\n'
+    
+    out += '\input{%s}\n' % op.basename(summarytablepath)
+    out += r'\newpage' +'\n'
+    out += '\input{%s}\n' % op.basename(histsummarypath)
+    
+    out += '\n\end{document}'
+    return out
+
+
+def to_histsummary(histdic, fontsize='scriptsize', sort=True):
     ''' Takes a dictionary of length 2 image paths IE:
           { 'foo': ('path1', 'path2') }  
         Thought it doens't matter, better if paths are relative 
@@ -22,25 +68,24 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
         Writes a subfigure with relative figs path.'''
 
     # Only way I can find to concantate long string that has raw literals
-    template = (r'\begin{figure}[h!]\centering' + '\n'
+    template = (r'\begin{textblock}{5}(4,1.0)' + '\n'
+       + r'{\bf \textsc{%s}}'+ '\n'
+       + '\hspace{4.5cm}\n' 
+       + r'\hyperlink{covtable}{\color{blue} \large \ttfamily %s}' + '\n' #FILENAME
+       + '\end{textblock}\n\n' 
+       + r'\begin{figure}[h!]\centering' + '\n'
        + '%s' + '\n' #HYPERTARGET GOES HERE
-       + '\subfigure{\includegraphics[width=12cm, height=8cm, keepaspectratio]{%s} }\\\\' + '\n'  #subfigure[] for labeled/lettered
+       + '\subfigure{\includegraphics[width=10.5cm, height=7cm, keepaspectratio]{%s} }\\\\' + '\n'  #subfigure[] for labeled/lettered
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' + '\n' 
        + '\subfigure{\includegraphics[width=6.5cm, height=4.875cm, keepaspectratio, frame]{%s} }' +  '\n'
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
        + '\subfigure{\includegraphics[width=6.5cm]{%s} }' +  '\n'
-      + '\label{%s}' +  '\n' 
+       + '\label{%s}' +  '\n' 
        + '\caption*{%s}' +'\n' #caption* mean "Figure 1" is not printed
        + '\end{figure}' + '\n'
        + r'\newpage' +'\n\n' )
 
-    # Add document header (commented out) and enough packages to compile standalone
-    out = '%\documentclass{article}\n'
-    out += ('%\usepackage{amsmath}\n' + '%\usepackage[export]{adjustbox}\n' + '%\usepackage{morefloats}\n'
-            '%\usepackage{xcolor}\n' + '%\usepackage[pdftex]{graphicx}\n' + '%\usepackage{subfigure}\n'
-            '%\usepackage[scriptsize]{caption}\n' + '%\usepackage{geometry}\n' + '%\usepackage{hyperref}\n\n') 
-    out += r'%\begin{document}' + '\n\n'
-
+    out = ''
 
     keys = histdic.keys()
     if sort:
@@ -80,17 +125,18 @@ def to_texfigure(histdic, fontsize='scriptsize', sort=True):
             )
         
                                                                             
-        out += template % (hypertarget, sem_image, hist_path1, adjust_path, hist_path2, bright_path, 
+        out += template % (model.folder, imagename.replace('_', '\\_'), hypertarget, sem_image, hist_path1, adjust_path, hist_path2, bright_path, 
                            ('semimg'+str(idx)), caption) #image label chosen arbitrarily
-
-    out += '%\end{document}'
     return out  
 
 
 
-def to_textable(infile, fontsize='tiny', sort=True):
+def to_textable(infile, fontsize='tiny', head='', sort=True):
     ''' Takes tab-delmited summary file; return latex table.  
         FIRST LINE USED AS HEADER.
+        
+        head adds folder name to top of table.  Bit of a hack
+        
         
         Note: '\t' is baked in! (see .split('\t')  '''
         
@@ -104,13 +150,13 @@ def to_textable(infile, fontsize='tiny', sort=True):
         lines.sort()
     lines.insert(0, header)
     
-    # Format lines for latex
-    
-    table = '%\documentclass{article}\n'
-    table += r'%\begin{document}'
-    table += '\n\n'    
-    table += r'{\%s' % fontsize
-    table += '\n'
+    table = ''
+
+    # Line above table
+    if head:
+        table += (r'\begin{adjustwidth}{-1cm}{}' + '\n' +
+        tex_string(r'{\noindent \large \bf \textsc{%s}} \hspace{0.2cm} (click to open in a \href{run:light_summary.xls}{\color{blue} \ttfamily{spreadsheet}} or \href{run:light_summary.txt}{\color{blue} \ttfamily{textfile}})\footnote{See techincal help in {\bf Appendix}}' % head)
+        + '\n\end{adjustwidth}\n\n')
 
     #Table header {c | c  etc...}
     table += r'\begin{adjustwidth}{-1cm}{}' + '\n'
@@ -138,7 +184,7 @@ def to_textable(infile, fontsize='tiny', sort=True):
         
                
     table += '\end{tabular}\n\end{adjustwidth}\n}'    
-    table += '\n\n%\end{document}'
+    #table += '\n\n%\end{document}'
     return table
 
 def logmkdir(fullpath):

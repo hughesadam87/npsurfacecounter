@@ -16,8 +16,8 @@ from logger import logclass, configure_logger, LogExit
 from imk_class import ImageDestroyer
 from man_adjust import manual_adjustments
 from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
-     sort_summary, rundict_foldersbyrun, to_texfigure, to_textable, test_suite_lowcoverage, \
-     output_testsuite, logwritefile, logmkdir, tif_to_png
+     sort_summary, rundict_foldersbyrun, to_histsummary, to_textable, test_suite_lowcoverage, \
+     output_testsuite, logwritefile, logmkdir, tif_to_png, tex_preview
 
 
 ## Histogram plot parameters
@@ -144,6 +144,7 @@ def main(indir, outdir, all_parms, compact_results = True):
             texmodel.adjust_path = tif_to_png(adj_path, outpath)
             
             texmodel.bright_path = op.join(outpath, 'Brightness_distribution.png')             
+            texmodel.folder = op.basename(indir)
             
             ### FIT A GUASSIAN IF POSSIBLE.  Also plots by default
 
@@ -273,11 +274,17 @@ def main(indir, outdir, all_parms, compact_results = True):
     full_summary.close() ;  light_summary.close() ; cov_summ.close() ; light_summary_part2.close()
 
     # Make .tex file for light summary
-    logger.info("Attempting to_textable")
-    with open( op.join(outdir,'summarytable.tex'), 'w') as o:        
+    logger.info("Created latex summarytable")
+    summarytablepath = op.join(outdir,'summarytable.tex')
+    
+    with open(summarytablepath, 'w') as o:        
         try:
-            for sumfile in [light_summary_filename, light2_summary_filename]:
-                textable = to_textable(sumfile)
+            for idx, sumfile in enumerate([light_summary_filename, light2_summary_filename]):
+                if idx == 0:
+                    head = op.basename(indir)
+                else:
+                    head = ''
+                textable = to_textable(sumfile, head=head)
                 o.write(textable) 
                 o.write('\n\n')
         except (Exception, LogExit) as exc:
@@ -288,15 +295,20 @@ def main(indir, outdir, all_parms, compact_results = True):
     out_exts=['.txt']
     outsums=[summary_filename, light_summary_filename, coverage_summary]
     
-    logger.info("Attempting to texify-histograms.") #what's this doing?        
-    with open(op.join(outdir, 'histsummary.tex'), 'w') as o:
+    logger.info("Creating latex histtable") #what's this doing?     
+    histtablepath = op.join(outdir, 'histsummary.tex')
+    with open(histtablepath, 'w') as o:
         try:
-            o.write(to_texfigure(tex_images))
+            o.write(to_histsummary(tex_images))
             o.close()
         except (Exception, LogExit) as exc:
             logger.critical('Texfigure FAILED: %s' % sumfile)
             print exc #Why aint trace working?  Cuz of how i'm catching these?
-        
+            
+    previewpath =op.join(outdir, 'preview.tex')
+    with open(previewpath, 'w') as o:
+        o.write( tex_preview(summarytablepath, histtablepath) )
+    logger.info("Compiling preview.tex")
 
     logger.info("Attempting sort summary.") #what's this doing?        
     for sumfile in outsums:
@@ -306,10 +318,16 @@ def main(indir, outdir, all_parms, compact_results = True):
                 shutil.copyfile(sumfile, sumfile.split('.')[0] + ext)
 
         except (Exception, LogExit) as e:
-            logger.warn('%s sort summary failed!' % sumfile )
+            logger.warn('%s sort summary failed!' % sumfile )  
+          
 
-    
-                
+    # Compile tex code
+    logger.info("Compiling preview.tex")
+    wd = os.getcwd()
+    os.chdir(outdir)
+    os.system('textopdf %s' % previewpath)
+    os.chdir(wd)
+
             
 ### MAIN PROGRAM ###
 if __name__ == '__main__':	
@@ -347,5 +365,6 @@ if __name__ == '__main__':
 
         main(indir, outdir, all_parms)
 
-
+    # Run pyclean
+    os.system('pyclean .')
 

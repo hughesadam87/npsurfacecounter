@@ -19,6 +19,7 @@ class TexModel(object):
     bright_path = ''
     
     adjust = None
+    folder = None  #Folder shortname that image located in
     
     # Imbuster coverage params
     bw_coverage = None
