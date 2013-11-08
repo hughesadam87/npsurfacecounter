@@ -17,7 +17,7 @@ from imk_class import ImageDestroyer
 from man_adjust import manual_adjustments
 from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, make_root_dir, \
      sort_summary, rundict_foldersbyrun, to_histsummary, to_textable, test_suite_lowcoverage, \
-     output_testsuite, logwritefile, logmkdir, tif_to_png, tex_preview
+     output_testsuite, logwritefile, logmkdir, tif_to_png
 
 
 ## Histogram plot parameters
@@ -275,11 +275,7 @@ def main(indir, outdir, all_parms, compact_results = True):
     with open(summarytablepath, 'w') as o:        
         try:
             for idx, sumfile in enumerate([_lite1, _lite2]):
-                if idx == 0:
-                    head = op.basename(indir)
-                else:
-                    head = ''
-                textable = to_textable(sumfile, head=head)
+                textable = to_textable(sumfile)
                 o.write(textable) 
                 o.write('\n\n')
         except (Exception, LogExit) as exc:
@@ -296,11 +292,10 @@ def main(indir, outdir, all_parms, compact_results = True):
             logger.critical('Texfigure FAILED: %s' % sumfile)
             print exc #Why aint trace working?  Cuz of how i'm catching these?
             
+    logger.info("Buidling previewfile")
     previewpath = op.join(outdir, op.basename(indir)+'_preview.tex')
-    with open(previewpath, 'w') as o:
-        o.write( tex_preview(summarytablepath, histtablepath) )
-    logger.info("Compiling preview.tex")
-       
+    shutil.copyfile('PREVIEW_TEMPLATE.tex', previewpath)
+
     ### Sort .xls files output, specify alternative file extensions
     out_ext = '.txt'
     outsums=[summary_filename, coverage_summary]    
@@ -318,7 +313,6 @@ def main(indir, outdir, all_parms, compact_results = True):
     shutil.copyfile(light_summary_filename, light_summary_filename.split('.')[0] + out_ext)
 
           
-
     # Compile tex code
     logger.info("Compiling preview.tex")
     wd = os.getcwd()

@@ -405,7 +405,7 @@ manual_adjustments['sept_5_13_UV50'] = {
     }
 
 manual_adjustments['sept_11_13_UV50'] = { 
-    'f1_30k_1_au to.tif':((None), (6, 0, 3066, 1989), (new_22)),
+    'f1_30k_1_auto.tif':((None), (6, 0, 3066, 1989), (new_22)),
     'f1_30k_1.tif':((107,255), (6, 0, 3066, 1989), (new_22)),
     'f1_30k_2_auto.tif':((None), (0, 3, 3072, 1983), (new_22)),
     'f1_30k_2.tif':((115,255), (0, 3, 3072, 1983), (new_22)),

@@ -13,54 +13,6 @@ def tex_string(string):
     ''' Reformat various characters to be latex compatible'''
     return string.replace('\t', ' & ').replace('%', '\%').replace('_', '\_').replace('#', '')   
 
-def tex_preview(summarytablepath, histsummarypath):
-    ''' Writes a "preview" string which wraps input statements to summarytable.tex
-        and histsummary.tex.  Thus, serving as a way to preview sem results without
-        changing code in histsummary or summarytable files.'''
-    
-    out = ( '\documentclass{article}\n\n' +
-            '\usepackage{amsmath}\n' +
-            '\usepackage{amssymb}\n' +
-            '\usepackage[absolute,overlay]{textpos}\n' +
-            '\usepackage[pdftex]{graphicx}\n' +
-            '\usepackage[export]{adjustbox}\n' +
-            '\usepackage{morefloats}\n' +
-            '\usepackage{amsthm}\n' +
-            '\usepackage{import}\n' +
-            '\usepackage{changepage}\n' +
-            '\usepackage{gensymb}\n' +
-            '\usepackage{xcolor}\n' +
-            '\usepackage{scrextend}\n' +
-            '\usepackage{pdfpages}\n' +
-            '\usepackage{subfigure}\n' +
-            '\usepackage[scriptsize]{caption}\n' +
-            '\usepackage{changepage}\n' +
-            '\usepackage{multicol}\n' +
-            '\usepackage{enumitem}\n' +
-            '\usepackage{xifthen}\n' +
-            '\usepackage{geometry}\n' +
-            '\usepackage{hyperref}\n' +
-            '\hypersetup{\n' +
-                'colorlinks=true, \n' +
-                'linkcolor=black,\n' +
-                'citecolor=black,\n' +
-                'filecolor=black,\n' +
-                'urlcolor=blue, \n' +
-                '}\n\n'
-          )
-
-    out += r'\begin{document}' + '\n\n'
-    
-    out += '\input{%s}\n' % op.basename(summarytablepath)
-    out += r'\newpage' +'\n'
-    out += r'\null' +'\n'    
-    out += r'\newpage' +'\n'
-    out += '\input{%s}\n' % op.basename(histsummarypath)
-    
-    out += '\n\end{document}'
-    return out
-
-
 def to_histsummary(histdic, fontsize='scriptsize', sort=True):
     ''' Takes a dictionary of length 2 image paths IE:
           { 'foo': ('path1', 'path2') }  
@@ -146,17 +98,9 @@ def to_textable(linestring, fontsize='tiny', head='', sort=True):
     if sort:
         lines.sort()
     lines.insert(0, header)
-    
-    table = ''
-
-    # Line above table
-    if head:
-        table += (r'\begin{adjustwidth}{-1cm}{}' + '\n' +
-        tex_string(r'{\noindent \large \bf \textsc{%s}} \hspace{0.2cm} (click to open in a \href{run:light_summary.xls}{\color{blue} \ttfamily{spreadsheet}} or \href{run:light_summary.txt}{\color{blue} \ttfamily{textfile}})\footnote{See techincal help in {\bf Appendix}}' % head)
-        + '\n\end{adjustwidth}\n\n')
 
     #Table header {c | c  etc...}
-    table += r'\begin{table}[h]' + '\n'
+    table = r'\begin{table}[h]' + '\n'
     table += '\scriptsize\n'
     table += r'\begin{adjustwidth}{-1cm}{}' + '\n'
     table += '\hypertarget{%s}{\;}\n' % TABLETARGET #Hypertarget for histograms 
