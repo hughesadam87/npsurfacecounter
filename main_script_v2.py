@@ -79,9 +79,6 @@ def main(indir, outdir, all_parms, compact_results = True):
     light_summary = logwritefile(light_summary_filename)
     cov_summ = logwritefile(coverage_summary)
     
-    ### OUTPUT FOR LOW COVERAGE TESTING ON 4/8/13
-#    apriltest = op.join(outdir, 'april_TEST.txt')
-
     ### Output run parameters but can't use shutil
     parmsout= logwritefile(op.join(outdir, 'Run Parameters'))
     parmsout.write('ImageJ Parameters:\n\n')
@@ -261,14 +258,12 @@ def main(indir, outdir, all_parms, compact_results = True):
 
                 
             full_summary.write(sum_out)
-            light_summary.write(_lite1 +'\n\n' + _lite2)
             cov_summ.write(cov_out)
             
             filecount+=1
             
-            
-    ### April 4/8/13 Coverage tests            
-#    output_testsuite(testdic, apriltest)
+
+    light_summary.write(_lite1 +'\n\n' + _lite2)            
                                 
     ### Close files ###
     full_summary.close() ;  light_summary.close() ; cov_summ.close()
@@ -290,10 +285,6 @@ def main(indir, outdir, all_parms, compact_results = True):
         except (Exception, LogExit) as exc:
             logger.critical('Texorate FAILED: %s' % sumfile)
             print exc #Why aint trace working?  Cuz of how i'm catching these?
-        
-    ### Sort output, specify alternative file extensions
-    out_exts=['.txt']
-    outsums=[summary_filename, light_summary_filename, coverage_summary]
     
     logger.info("Creating latex histtable") #what's this doing?     
     histtablepath = op.join(outdir, 'histsummary.tex')
@@ -305,12 +296,16 @@ def main(indir, outdir, all_parms, compact_results = True):
             logger.critical('Texfigure FAILED: %s' % sumfile)
             print exc #Why aint trace working?  Cuz of how i'm catching these?
             
-    previewpath =op.join(outdir, 'preview.tex')
+    previewpath = op.join(outdir, 'preview.tex')
     with open(previewpath, 'w') as o:
         o.write( tex_preview(summarytablepath, histtablepath) )
     logger.info("Compiling preview.tex")
-
-    logger.info("Attempting sort summary.") #what's this doing?        
+       
+    ### Sort .xls files output, specify alternative file extensions
+    out_exts=['.txt']
+    outsums=[summary_filename, coverage_summary]    
+    
+    logger.info("Attempting sort summary.")        
     for sumfile in outsums:
         try:        
             sort_summary(sumfile, delim=OUT_DELIM)  #Pass filenames not 
@@ -319,6 +314,10 @@ def main(indir, outdir, all_parms, compact_results = True):
 
         except (Exception, LogExit) as e:
             logger.warn('%s sort summary failed!' % sumfile )  
+
+    # Handle light summary specially
+    shutil.copyfile(light_summary_filename, light_summary_filename.split('.')[0] + ext)
+
           
 
     # Compile tex code

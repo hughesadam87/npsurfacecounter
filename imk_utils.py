@@ -53,6 +53,8 @@ def tex_preview(summarytablepath, histsummarypath):
     
     out += '\input{%s}\n' % op.basename(summarytablepath)
     out += r'\newpage' +'\n'
+    out += r'\null' +'\n'    
+    out += r'\newpage' +'\n'
     out += '\input{%s}\n' % op.basename(histsummarypath)
     
     out += '\n\end{document}'
