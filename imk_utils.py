@@ -131,18 +131,14 @@ def to_histsummary(histdic, fontsize='scriptsize', sort=True):
 
 
 
-def to_textable(infile, fontsize='tiny', head='', sort=True):
-    ''' Takes tab-delmited summary file; return latex table.  
-        FIRST LINE USED AS HEADER.
-        
-        head adds folder name to top of table.  Bit of a hack
-        
-        
-        Note: '\t' is baked in! (see .split('\t')  '''
-        
-    lines = open(infile, 'r').readlines()
-    
+def to_textable(lines, fontsize='tiny', head='', sort=True):
+    ''' Hackasauraus.  Only useful to Adam.  Takes in the lines
+        that are supposed to be correspond to light_summary, and
+        turns them into a .tex table.  If head, the top line is assumes
+        as the row label. '''
+            
     # Strip newlines, remove blank lines
+    lines = lines.split('\n') #Same as .readlines from file
     lines = [line.strip() for line in lines if line]
     lines = [line for line in lines if line]
     header = lines.pop(0)

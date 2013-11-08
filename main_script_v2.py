@@ -71,11 +71,9 @@ def main(indir, outdir, all_parms, compact_results = True):
     summary_filename = op.join(outdir, 'full_summary.xls')
     light_summary_filename = op.join(outdir, 'light_summary.xls')
     coverage_summary = op.join(outdir, 'detailed_summary.xls')
-    light2_summary_filename = op.join(outdir, 'light_summary_part2.xls')
     
     full_summary = logwritefile(summary_filename)
     light_summary = logwritefile(light_summary_filename)
-    light_summary_part2 = logwritefile(light2_summary_filename)
     cov_summ = logwritefile(coverage_summary)
     
     ### OUTPUT FOR LOW COVERAGE TESTING ON 4/8/13
@@ -260,8 +258,7 @@ def main(indir, outdir, all_parms, compact_results = True):
 
                 
             full_summary.write(sum_out)
-            light_summary.write(lite_out)
-            light_summary_part2.write(lite_out_2)            
+            light_summary.write(lite_out +'\n' + lite_out_2)
             cov_summ.write(cov_out)
             
             filecount+=1
@@ -271,7 +268,7 @@ def main(indir, outdir, all_parms, compact_results = True):
 #    output_testsuite(testdic, apriltest)
                                 
     ### Close files ###
-    full_summary.close() ;  light_summary.close() ; cov_summ.close() ; light_summary_part2.close()
+    full_summary.close() ;  light_summary.close() ; cov_summ.close()
 
     # Make .tex file for light summary
     logger.info("Created latex summarytable")
@@ -279,7 +276,7 @@ def main(indir, outdir, all_parms, compact_results = True):
     
     with open(summarytablepath, 'w') as o:        
         try:
-            for idx, sumfile in enumerate([light_summary_filename, light2_summary_filename]):
+            for idx, sumfile in enumerate([lite_out, lite_out_2]):
                 if idx == 0:
                     head = op.basename(indir)
                 else:
