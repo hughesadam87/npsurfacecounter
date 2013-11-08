@@ -296,7 +296,7 @@ def main(indir, outdir, all_parms, compact_results = True):
             logger.critical('Texfigure FAILED: %s' % sumfile)
             print exc #Why aint trace working?  Cuz of how i'm catching these?
             
-    previewpath = op.join(outdir, 'preview.tex')
+    previewpath = op.join(outdir, op.basename(indir)+'_preview.tex')
     with open(previewpath, 'w') as o:
         o.write( tex_preview(summarytablepath, histtablepath) )
     logger.info("Compiling preview.tex")
