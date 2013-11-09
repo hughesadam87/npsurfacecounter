@@ -133,7 +133,7 @@ manual_adjustments['aug_22_12'] = {
     'f3_50k_low_res_7_11_low.tif':((95,255),(0,0,1023,738),(old_30))
     } 
 
-manual_adjustments['sept_5_12'] = {
+manual_adjustments['sept_5_12'] = {  #THERE ARE WAY MORE IMAGES THAN JUST THESE ONES
     ######F1
     #'f1_5000.tif':( (163, 255),(1533, 9, 1422, 1104),(old_30)),   #No aggregates in crop
     'f1_5000.tif':( (163, 255),(1242, 9, 1713, 1053),(old_30)),   #Huge aggregate in crop

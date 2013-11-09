@@ -24,6 +24,7 @@ from imk_utils import get_shortname, get_files_in_dir, magdict_foldersbymag, mak
 from histogram_params import size_hists, grey_hissy, circ_hissy
 
 OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive 
+PREVIEWTEMPLATE = open('PREVIEW_TEMPLATE.tex', 'r').read()
   
     
 def main(indir, outdir, all_parms, compact_results = True):   
@@ -294,7 +295,8 @@ def main(indir, outdir, all_parms, compact_results = True):
             
     logger.info("Buidling previewfile")
     previewpath = op.join(outdir, op.basename(indir)+'_preview.tex')
-    shutil.copyfile('PREVIEW_TEMPLATE.tex', previewpath)
+    with open(previewpath, 'w') as p:
+        p.write(PREVIEWTEMPLATE % {'foldername':op.basename(indir).replace('_', '\\_') })
 
     ### Sort .xls files output, specify alternative file extensions
     out_ext = '.txt'
