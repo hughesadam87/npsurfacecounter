@@ -398,12 +398,11 @@ manual_adjustments['sept_4_13_UV50'] = {
     'f1_30k_2_auto.tif':((None), (3, 0, 3069, 1452), (new_22)),
     'f1_30k_2.tif':((145,255), (3, 0, 3069, 1452), (new_22)),
     'f1_30k_auto.tif':((None), (None), (new_22)),
-    'f1_30k.tif':((129,255), (None), (new_22)),
+    'f1_30k.tif':((129,255), (None), (new_22))
     }
 
 manual_adjustments['sept_5_13_UV50'] = {    
-    'f3_30k_full.tif':((159,255), (3, 6, 3069, 1968), (new_22)),
-    'f2_30k_small.tif':((133,255), (63, 1332, 885, 642), (new_22)),
+    'f3_30000.tif':((126,255), (21, 177, 3051, 1767), (new_22))
     }
 
 manual_adjustments['sept_11_13_UV50'] = { 
