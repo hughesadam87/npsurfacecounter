@@ -276,7 +276,7 @@ def main(indir, outdir, all_parms, compact_results = True):
     with open(summarytablepath, 'w') as o:        
         try:
             for idx, sumfile in enumerate([_lite1, _lite2]):
-                textable = to_textable(sumfile)
+                textable = to_textable(sumfile, foldername=texmodel.folder)
                 o.write(textable) 
                 o.write('\n\n')
         except (Exception, LogExit) as exc:
@@ -319,7 +319,8 @@ def main(indir, outdir, all_parms, compact_results = True):
     logger.info("Compiling preview.tex")
     wd = os.getcwd()
     os.chdir(outdir)
-    os.system('textopdf %s' % previewpath)
+    os.system('fasttex %s' % previewpath)
+    os.system('fasttex %s' % previewpath)
     os.chdir(wd)
 
             

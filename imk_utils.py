@@ -25,7 +25,7 @@ def to_histsummary(histdic, fontsize='scriptsize', sort=True):
     template = (r'\begin{textblock}{5}(4,1.0)' + '\n'
        + r'{\bf \textsc{%s}}'+ '\n'
        + '\hspace{4.5cm}\n' 
-       + r'\hyperlink{covtable}{\color{blue} \large \ttfamily %s}' + '\n' #FILENAME
+       + r'\hyperlink{%s}{\color{blue} \large \ttfamily %s}' + '\n' #FILENAME
        + '\end{textblock}\n\n' 
        + r'\begin{figure}[h!]\centering' + '\n'
        + '%s' + '\n' #HYPERTARGET GOES HERE
@@ -54,6 +54,7 @@ def to_histsummary(histdic, fontsize='scriptsize', sort=True):
     for idx, key in enumerate(keys):
         # Paths of form /run/mag/imagename/D_distribuion
         model = histdic[key]
+        folder = model.folder
         
         sem_image = _hacksplit(model.image_path)
         hist_path1 = _hacksplit(model.hist_path1)
@@ -71,24 +72,28 @@ def to_histsummary(histdic, fontsize='scriptsize', sort=True):
 
         hypertarget = '\hypertarget{%s}{\;}' % 'hist%s' % imagename
         
-        caption = '\hyperlink{%s}' % TABLETARGET + tex_string(
+        caption = '\hyperlink{%s}' % (TABLETARGET + folder) + tex_string(
             r'{\color{blue} \small \ttfamily %s}: '
             'SEM image, raw (top)/size-corrected (bottom), '
             'diam histograms, binary, grayscale.\\\\%s \;\; %s}' % 
             ( imagename, cropmessage, model.as_tex_string()) )
         
                                                                             
-        out += template % (model.folder.replace('_', '\\_'), imagename.replace('_', '\\_'), hypertarget, sem_image, hist_path1, adjust_path, hist_path2, bright_path, 
+        out += template % (folder.replace('_', '\\_'), (TABLETARGET+folder),
+                           imagename.replace('_', '\\_'), hypertarget, sem_image, 
+                           hist_path1, adjust_path, hist_path2, bright_path, 
                            ('semimg'+str(idx)), caption) #image label chosen arbitrarily
     return out  
 
 
 
-def to_textable(linestring, fontsize='tiny', head='', sort=True):
+def to_textable(linestring, foldername='', fontsize='tiny', head='', sort=True):
     ''' Hackasauraus.  Only useful to Adam.  Takes in the lines
         that are supposed to be correspond to light_summary, and
         turns them into a .tex table.  If head, the top line is assumes
-        as the row label.'''
+        as the row label.
+        foldername is for hypertargeting multiple tables
+        '''
             
     # Strip newlines, remove blank lines
     lines = linestring.split('\n') #Same as .readlines from file
@@ -103,7 +108,7 @@ def to_textable(linestring, fontsize='tiny', head='', sort=True):
     table = r'\begin{table}[h]' + '\n'
     table += '\scriptsize\n'
     table += r'\begin{adjustwidth}{-1cm}{}' + '\n'
-    table += '\hypertarget{%s}{\;}\n' % TABLETARGET #Hypertarget for histograms 
+    table += '\hypertarget{%s}{\;}\n' % (TABLETARGET + foldername) #Hypertarget for histograms 
     table += r'\begin{tabular}{ |'
     for i in range(len(header.split('\t'))):
         table += 'c |'
