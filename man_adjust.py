@@ -65,7 +65,7 @@ manual_adjustments['aug_6_12'] = { #/2012/August/8_4_6_First_SEM_Experiment/8_6_
     '8_b3_f4_30k3_high.tif':((161 ,255), (9, 138, 488, 533),(old_30)),	
     
     '8_b1_f3_100k_low.tif':((131 ,255), (2, 3, 1019, 597),(old_30)),	
-    '8_b1_f3_100k_high.tif':((141 ,255), (2, 3, 1019, 597),(old_30),)
+    '8_b1_f3_100k_high.tif':((141 ,255), (2, 3, 1019, 597),(old_30))
     }
 
 manual_adjustments['aug_13_12'] = { #2012/August/8_13_Second_SEM_Experiment/8_13_BYMAG_FOR_SEMANALYSIS
@@ -600,6 +600,27 @@ manual_adjustments['nov_2_13'] = {
      'f6_60840_lowres_highqual.tif':((139 ,255), (2, 4, 1022, 652), (new_22)),
     }
 
+
+
+
+manual_adjustments['SCIKIT_TEST']={
+    'WATERSHED_8_b1_f3_100k_high.tif':((141 ,255), (2, 3, 1019, 597),(old_30)),
+    'WATERSHED_8_b2_f2_100k2_high.tif':((169 ,255), (7, 211, 650, 456),(old_30)),	
+    'WATERSHED_f3_100000_low.tif':((98,255),(3,123,3060,1713),(new_18)),
+
+    'WARPED_8_b3_f4_100k3_high.tif':((155 ,255), (2, 11, 1016, 590),(old_30)),	
+    'WARPED_f2_b1_50k21_high.tif': ((121, 255),(6, 9, 1007, 625),(old_30)),
+
+    'LOWCONTRAST_f3_30000_2.tif':((35,255),(6, 21, 3066, 2016),(pella_50)),
+    'LOWCONTRAST_f1_30000_low.tif':((64,255),(12,12,3051,2049),(pella_50)),
+    'LOWCONTRAST_f4_30000_low.tif':((40,255),(9,9,3054,1983),(new_22)),
+
+    'NONCIRC-DARK_f2_30000_low.tif':((67,255),(6,9,2967,2046),(pella_50)),
+
+    'NICE_f1_30500.tif':((121,255),(30, 30, 3030, 1872),(old_30)),
+    'NICE_f2_b1_100k21_high.tif':((145, 255),(5, 18, 1012, 614),(old_30)),
+
+}
 
 #manual_adjustments[DATE] = {
     #'.tif':(( ,255), (), (new_22)),
