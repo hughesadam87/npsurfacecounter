@@ -1,6 +1,7 @@
 import os, sys, shutil
 import os.path as op
 from scipy import integrate
+import subprocess
 
 
 ###Pyrecords imports
@@ -26,6 +27,12 @@ from histogram_params import size_hists, grey_hissy, circ_hissy
 OUT_DELIM = '\t'  #Used in many outfiles; don't recall how pervasive 
 PREVIEWTEMPLATE = open('PREVIEW_TEMPLATE.tex', 'r').read()
   
+
+def quietprocess(cmd):
+    ''' Runs a system command, sends stderr to devnull'''
+    proc=subprocess.Popen(cmd, shell=True, stderr=open('/dev/null', 'w'))
+    proc.wait()   
+    
     
 def main(indir, outdir, all_parms, compact_results = True):   
     ''' Script to take a batch of SEM images and perform customized imagej and 
@@ -319,8 +326,8 @@ def main(indir, outdir, all_parms, compact_results = True):
     logger.info("Compiling preview.tex")
     wd = os.getcwd()
     os.chdir(outdir)
-    os.system('fasttex %s' % previewpath)
-    os.system('fasttex %s' % previewpath)
+    quietprocess('fasttex %s' % previewpath)
+    quietprocess('fasttex %s' % previewpath)
     os.chdir(wd)
 
             
@@ -361,5 +368,6 @@ if __name__ == '__main__':
         main(indir, outdir, all_parms)
 
     # Run pyclean
-    os.system('pyclean .')
+    quietprocess('pyclean .')
+
 

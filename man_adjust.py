@@ -463,9 +463,13 @@ manual_adjustments['oct_8_13'] = {
     'f3_30000_auto.tif': ((None), (756, 0, 2316, 2304), (new_22)),      
     }
 
-#Oct_9_13 :{
-# Adam, all these had low coverage; try to threshold yourself.
-#    }
+manual_adjustments['oct_9_13'] = {
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':(( ,255), (), (new_22)),
+    #'.tif':((, 255), (), (new_22))  
+    }
+
 
 manual_adjustments['oct_15_13'] = {
     'f1_30000.tif': ((114,255),(0, 6, 3072, 1959),(new_22)),
