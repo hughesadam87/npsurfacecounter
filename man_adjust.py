@@ -130,7 +130,8 @@ manual_adjustments['aug_22_12'] = {
     'f1_50000_high.tif':((120,255),(3,3,3063,1971),(old_30)), 
     'f1_30500.tif':((121,255),(30, 30, 3030, 1872),(old_30)),
     'f2_30000.tif':((99,255), (30,30,3030,1872), (old_30)),
-    'f3_50k_low_res_7_11_low.tif':((95,255),(0,0,1023,738),(old_30))
+    'f3_50k_low_res_7_11_low.tif':((95,255),(0,0,1023,738),(old_30)),
+    'f4_30000_1.tif':((150,255), (4,5,1020,721), (old_30))
     } 
 
 manual_adjustments['sept_5_12'] = {  #THERE ARE WAY MORE IMAGES THAN JUST THESE ONES
