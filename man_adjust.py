@@ -315,13 +315,13 @@ manual_adjustments['jan_29_13'] = {
     }
 
 
-manual_adjustments['feb_2_13'] = {
+manual_adjustments['feb_4_13'] = {
     'f2_30000.tif':((86,255), (15, 18, 3057, 2019), (new_22)),
     'f4_30000.tif':((77,255), (9, 15, 3063, 2016), (new_22))
      }
 
 
-manual_adjustments['feb_4_13'] = {
+manual_adjustments['feb_2_13'] = {
     'f2_30000.tif':((76,255), (18, 21, 3054, 2025), (new_22)),
     'f2_40000.tif':((74,255), (12, 30, 3060, 2001), (new_22)),
     'f3_30000.tif':((86,255), (15, 9, 3057, 2028), (new_22))
