@@ -1,12 +1,3 @@
-#
-# Canopy product code
-#
-# (C) Copyright 2013 Enthought, Inc., Austin, TX
-# All right reserved.
-#
-# This file is confidential and NOT open source.  Do not distribute.
-#
-
 ''' Client logging tools.  configure_logger() returns a root_logger with separate
     file and stream handlers.  log() is a flexible decorator that logs a function,
     displays its arguments and their values, and formatts errors different based
