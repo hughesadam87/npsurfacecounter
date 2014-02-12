@@ -1456,7 +1456,6 @@ class ImageDestroyer(object):
         else:
             binnumber=self._binnumber
 
-
         working=range_slice(self.count_results[attstyle], start=wrange[0], stop=wrange[1], style='value')
 
         ### Even if I don't save plot, just easier to do this 
