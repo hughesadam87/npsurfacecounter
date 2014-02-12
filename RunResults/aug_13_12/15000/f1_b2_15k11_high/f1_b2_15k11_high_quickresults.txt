@@ -1,0 +1,27 @@
+#### Results Summary ####
+% Surface sampled	Area Sampled
+6.83	209501286.0
+
+#### Image parameters####
+Filename	magnification	field of view(nm)	resolution	nm/pixel
+f1_b2_15k11_high.tif	15000	(18958.0, 14218.0)	(1024, 768)	18.51
+
+#### Particle analysis/counting parameters####
+IMJ particles (no noise)	nanoparticles	noise_particles	singles	doubles_equiv	mids_equiv	bigs_equiv	doubles_actual	mids_actual	bigs_actual	(%)singles_ratio_equiv_nonoise	(%)doubles_ratio_equiv_nonoise	(%)mids_ratio_equiv_nonoise	(%)bigs_ratio_equiv_nonoise	(%)noise_ratio_equiv_wnoise	(%)singles_ratio_equiv_wnoise	(%)doubles_ratio_equiv_wnoise	(%)mids_ratio_equiv_wnoise	(%)bigs_ratio_equiv_wnoise	(%)singles_ratio_actual_nonoise	(%)doubles_ratio_actual_nonoise	(%)mids_ratio_actual_nonoise	(%)bigs_ratio_actual_nonoise	(%)noise_ratio_actual_wnoise	(%)singles_ratio_actual_wnoise	(%)doubles_ratio_actual_wnoise	(%)mids_ratio_actual_wnoise	(%)bigs_ratio_actual_wnoise
+264443	541642	0	9240	12130.0	6472	9145	6065	2545	208	24.98	32.8	17.5	24.72	0.0	24.98	32.8	17.5	24.72	51.17	33.59	14.09	1.15	0.0	51.17	33.59	14.09	1.15
+
+#### Input parameters####
+despeckle	crop	thresholding
+True	(4, 24, 1012, 604)	(128, 255)
+
+#### Coverage parameters####
+bw_noisy(%)	part_cover(%)	bw_nonoise(%)	anal_part_error	noise_cover(%)	corr_cov(%)
+14.05	13.76	14.05	2.11	0.0	48.82
+
+#### NP Sizing parameters####
+Min Size Criteria Met	Diam Est (nm)	Sigma Est (nm)
+False	None	None
+
+#### Protein parameters####
+protein (cluster style/fill cracks)	Coverage style	bsa on singles	bsa on doubles	bsa on mids	bsa on bigs	%bsa singles	%bsa doubles	%bsa mids	%bsa bigs	bsa total
+hemisphere, False	Advanced	526578	635176.0	542161	166610	28.15	33.96	28.98	8.91	27392189

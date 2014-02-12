@@ -1,0 +1,6 @@
+ImageJ Parameters:
+
+rsmall	0.0	clarge	1.0	rlarge	Infinity	csmall	0.0	despeckle	True
+
+Size Parameters:
+flat_high	150.0	scale_factor	1.0	mean_correction	True	sing_low	None	sing_high	None
