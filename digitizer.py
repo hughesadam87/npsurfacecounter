@@ -429,7 +429,7 @@ class MultiHistMaster(object):
         bw= range/#bins '''
         attr_range=abs(self.df[column].max() - self.df[column].min()) 
         self.bin_number=int( attr_range/binwidth )       
-        
+                
         
         
         
