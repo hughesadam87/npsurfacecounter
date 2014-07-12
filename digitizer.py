@@ -427,6 +427,7 @@ class MultiHistMaster(object):
         without needeing to store the areas data apart from the data in this program.
         
         bw= range/#bins '''
+
         attr_range=abs(self.df[column].max() - self.df[column].min()) 
         self.bin_number=int( attr_range/binwidth )       
                 

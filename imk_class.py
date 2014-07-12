@@ -371,8 +371,13 @@ class ImageDestroyer(object):
         ''' This computes the ratio of the blackwhite coverage
             to that of the imagej coverage cutting noise out of both estimates.'''
         ### noiseless particle coverages
-        partcover=100.0 * (self.count_results['area'][self.singles_low::].sum() / self.sampled_area)
-        bw=self.noiseless_bw_coverage
+#	import sys
+#	print self.count_results['area'], self.singles_low, type(self.count_results['area'])
+#	print self.count_results['area'] > self.singles_low
+#	sys.exit()
+#        partcover = 100.0 * (self.count_results['area'][self.singles_low::].sum() / self.sampled_area)
+        partcover = 100.0 * ((self.count_results['area'] >= self.singles_low).sum() / self.sampled_area)
+        bw = self.noiseless_bw_coverage
         return 100.0 * ((bw - partcover) / bw)
     
     
@@ -1049,9 +1054,11 @@ class ImageDestroyer(object):
             infile=self.results_file
         df = to_dataframe(from_file(results_manager, infile, parsecomments=True))
         ### Add two psuedo columns length and psuedod (diamter converstion assuming a circle) ###
-        lengths = DataFrame((np.sqrt(df.area)), columns=['length'])
-        psuedo_d = DataFrame((1.13*np.sqrt(df.area)), columns=['psuedo_d'])
-        df = df.join(lengths) ; df=df.join(psuedo_d)  #Could prolly do this in one merge but lazy
+        lengths = np.sqrt(df.area)
+        psuedo_d = 1.13*np.sqrt(df.area)
+	new = DataFrame({'length':lengths, 'psuedo_d':psuedo_d})
+
+	df = df.join(new)
         self.digiframe = MultiHistMaster(dataframe=df) #Populated when count results is called       
         self.digiframe._set_binnumber_from_data_binwidth('length', self.min_pixel_length)         
 
