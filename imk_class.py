@@ -369,14 +369,14 @@ class ImageDestroyer(object):
     @property
     def particle_fitting_error(self):
         ''' This computes the ratio of the blackwhite coverage
-            to that of the imagej coverage cutting noise out of both estimates.'''
+	to that of the imagej coverage cutting noise out of both estimates.'''
         ### noiseless particle coverages
-#	import sys
-#	print self.count_results['area'], self.singles_low, type(self.count_results['area'])
-#	print self.count_results['area'] > self.singles_low
-#	sys.exit()
+         # pandas 0.12 way...
 #        partcover = 100.0 * (self.count_results['area'][self.singles_low::].sum() / self.sampled_area)
-        partcover = 100.0 * ((self.count_results['area'] >= self.singles_low).sum() / self.sampled_area)
+ 
+        # pandas 0.14 way
+        area = self.count_results['area']	
+        partcover = 100.0 * (area[area >= self.singles_low].sum() / self.sampled_area)
         bw = self.noiseless_bw_coverage
         return 100.0 * ((bw - partcover) / bw)
     
@@ -1467,7 +1467,7 @@ class ImageDestroyer(object):
 
         ### Even if I don't save plot, just easier to do this 
         plt.clf()
-        counts, bin_edges, patches=plt.hist(working, bins=binnumber, color='green', alpha=0.4) 
+        counts, bin_edges, patches=plt.hist(np.array(working), bins=binnumber, color='green', alpha=0.4) 
 
         bincenters=get_bin_points(bin_edges, position='c')
         
